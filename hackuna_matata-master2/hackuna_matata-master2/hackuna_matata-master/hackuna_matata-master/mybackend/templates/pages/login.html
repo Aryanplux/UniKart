@@ -1,0 +1,180 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniKart - Login</title>
+    <link rel="stylesheet" href="{% static 'css/global.css' %}">
+    <link rel="stylesheet" href="{% static 'css/auth.css' %}">
+</head>
+<body>
+    <div class="auth-bg dark" id="authContainer">
+        <nav class="auth-navbar">
+            <h1 class="brand">Uni Kart</h1>
+            <div class="navbar-right-buttons" id="navbarButtons">
+                <button class="dark-mode-btn" id="darkModeBtn">
+                    🌞 Light Mode
+                </button>
+                <button class="sign-up-btn" id="toggleAuthBtn">
+                    Sign Up
+                </button>
+            </div>
+        </nav>
+
+        <main class="auth-container">
+            <!-- Login Form -->
+            <div class="auth-card" id="loginForm">
+                <h2 class="auth-title">LOG IN</h2>
+                
+                <form class="auth-form" id="loginFormElement" method="POST" action="{% url 'login' %}">
+                    {% csrf_token %}
+                    <input
+                        type="text"
+                        name="username"
+                        placeholder="Username"
+                        class="auth-input"
+                        required
+                    />
+                    
+                    <input
+                        type="password"
+                        name="password"
+                        placeholder="Password"
+                        class="auth-input"
+                        required
+                    />
+                    
+                    <button type="submit" name="login" class="auth-submit-btn" id="loginBtn">
+    Log In
+</button>
+                </form>
+
+                {% if error %}
+                <p style="color:red; margin-top:10px;">{{ error }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Sign Up Form (hidden by default) -->
+            <div class="auth-card" id="signupForm" style="display: none;">
+                <h2 class="auth-title">SIGN UP</h2>
+                
+                <form class="auth-form" id="signupFormElement" method="POST" action="{% url 'signup' %}">
+                    {% csrf_token %}
+                    <input
+                        type="text"
+                        name="username"
+                        placeholder="Username"
+                        class="auth-input"
+                        required
+                    />
+                    
+                    <input
+                        type="password"
+                        name="password"
+                        placeholder="Password"
+                        class="auth-input"
+                        required
+                    />
+                    
+                    <input
+                        type="password"
+                        name="confirm_password"
+                        placeholder="Re-enter Password"
+                        class="auth-input"
+                        required
+                    />
+                    
+                    <button type="submit" name="signup" class="auth-submit-btn" id="signupBtn">
+    Sign Up
+</button>
+                </form>
+
+                {% if error %}
+                <p style="color:red; margin-top:10px;">{{ error }}</p>
+                {% endif %}
+
+                <p class="auth-switch">
+                    Already have an account?
+                    <button type="button" id="switchToLogin" class="switch-btn">
+                        Log In
+                    </button>
+                </p>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Keep your dark mode + toggle logic
+        let isDarkMode = true;
+        let isSignupMode = false;
+
+        function toggleDarkMode() {
+            const container = document.getElementById('authContainer');
+            const btn = document.getElementById('darkModeBtn');
+            
+            isDarkMode = !isDarkMode;
+            
+            if (isDarkMode) {
+                container.classList.add('dark');
+                btn.innerHTML = '🌞 Light Mode';
+            } else {
+                container.classList.remove('dark');
+                btn.innerHTML = '🌙 Dark Mode';
+            }
+            
+            localStorage.setItem('darkMode', isDarkMode);
+        }
+
+        function toggleForms() {
+            const loginForm = document.getElementById('loginForm');
+            const signupForm = document.getElementById('signupForm');
+            const toggleBtn = document.getElementById('toggleAuthBtn');
+            
+            isSignupMode = !isSignupMode;
+            
+            if (isSignupMode) {
+                loginForm.style.display = 'none';
+                signupForm.style.display = 'block';
+                toggleBtn.textContent = 'Log In';
+            } else {
+                loginForm.style.display = 'block';
+                signupForm.style.display = 'none';
+                toggleBtn.textContent = 'Sign Up';
+            }
+        }
+
+        function switchToLogin() {
+            const loginForm = document.getElementById('loginForm');
+            const signupForm = document.getElementById('signupForm');
+            const toggleBtn = document.getElementById('toggleAuthBtn');
+            
+            isSignupMode = false;
+            loginForm.style.display = 'block';
+            signupForm.style.display = 'none';
+            toggleBtn.textContent = 'Sign Up';
+        }
+
+        window.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('darkMode');
+            if (savedTheme !== null) {
+                isDarkMode = JSON.parse(savedTheme);
+                const container = document.getElementById('authContainer');
+                const btn = document.getElementById('darkModeBtn');
+                
+                if (isDarkMode) {
+                    container.classList.add('dark');
+                    btn.innerHTML = '🌞 Light Mode';
+                } else {
+                    container.classList.remove('dark');
+                    btn.innerHTML = '🌙 Dark Mode';
+                }
+            }
+
+            document.getElementById('darkModeBtn').addEventListener('click', toggleDarkMode);
+            document.getElementById('toggleAuthBtn').addEventListener('click', toggleForms);
+            document.getElementById('switchToLogin').addEventListener('click', switchToLogin);
+        });
+    </script>
+</body>
+</html>

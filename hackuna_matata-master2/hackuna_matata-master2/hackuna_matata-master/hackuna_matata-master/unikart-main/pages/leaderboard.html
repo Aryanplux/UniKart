@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniKart - Leaderboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script>
+    (function() {
+      const darkMode = localStorage.getItem('darkMode') === 'true';
+      if (darkMode) {
+        document.documentElement.classList.add('dark');
+        document.body.classList.add('dark');
+      }
+    })();
+    </script>
+    <style>
+        :root {
+            --primary: #e31c1c;
+            --primary-dark: #b01212;
+            --gold: linear-gradient(135deg, #ffd700, #ffed4e);
+            --silver: linear-gradient(135deg, #c0c0c0, #e8e8e8);
+            --bronze: linear-gradient(135deg, #cd7f32, #daa520);
+            --bg-light: #f7faf7;
+            --bg-card: #ffffff;
+            --text-primary: #222;
+            --text-secondary: #666;
+            --text-muted: #999;
+            --border-color: #e0e0e0;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.15);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="dark"] {
+            --bg-light: linear-gradient(135deg, #1a1a1a 0%, #0f1419 100%);
+            --bg-card: #242424;
+            --text-primary: #f5f5f5;
+            --text-secondary: #ccc;
+            --text-muted: #aaa;
+            --border-color: #333;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg-light);
+            color: var(--text-primary);
+            line-height: 1.6;
+            transition: var(--transition);
+        }
+
+        body.dark {
+            background: var(--bg-light);
+            color: var(--text-primary);
+        }
+
+        .container {
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* Sidebar - Keep Original Style */
+        nav.sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 80px;
+            background: var(--primary);
+            padding: 24px 0;
+            box-shadow: 2px 0 10px rgba(227, 28, 28, 0.1);
+            display: flex;
+            flex-direction: column;
+            transition: width 0.3s ease;
+            user-select: none;
+            z-index: 1000;
+            overflow: hidden;
+        }
+
+        nav.sidebar.expanded {
+            width: 240px;
+        }
+
+        body.dark nav.sidebar {
+            background: #222;
+        }
+
+        .sidebar-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 0 16px;
+            flex-grow: 1;
+        }
+
+        .sidebar-icon {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            color: #fff;
+            font-weight: 600;
+            font-size: 16px;
+            padding: 14px 16px;
+            margin: 4px 0;
+            border-radius: 12px;
+            text-decoration: none;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sidebar-icon::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            transition: var(--transition);
+        }
+
+        .sidebar-icon:hover::before {
+            left: 0;
+        }
+
+        .sidebar-icon:hover {
+            transform: translateX(4px);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        body.dark .sidebar-icon {
+            color: #ff6a6a;
+        }
+
+        body.dark .sidebar-icon:hover {
+            background: rgba(255, 106, 106, 0.15);
+        }
+
+        .sidebar-label {
+            margin-left: 16px;
+            opacity: 0;
+            transform: translateX(-10px);
+            transition: var(--transition);
+            font-weight: 500;
+        }
+
+        nav.sidebar.expanded .sidebar-label {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .sidebar-icon svg {
+            width: 24px;
+            height: 24px;
+            stroke: currentColor;
+            flex-shrink: 0;
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #ff4757;
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            min-width: 18px;
+            height: 18px;
+            line-height: 18px;
+            border-radius: 9px;
+            text-align: center;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        /* Main Leaderboard Content */
+        .leaderboard-main {
+            margin-left: 80px;
+            flex: 1;
+            min-height: 100vh;
+            background: var(--bg-light);
+            transition: margin-left 0.3s ease;
+        }
+
+        nav.sidebar.expanded ~ .leaderboard-main {
+            margin-left: 240px;
+        }
+
+        /* Premium Header */
+        .leaderboard-header {
+            background: linear-gradient(135deg, var(--primary) 0%, #fa6868 100%);
+            padding: 60px 0 80px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body.dark .leaderboard-header {
+            background: linear-gradient(135deg, #333 0%, #555 100%);
+        }
+
+        .leaderboard-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 80%, rgba(255,255,255,0.1) 0%, transparent 50%);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 40px;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .leaderboard-title {
+            font-size: 3.5rem;
+            font-weight: 900;
+            color: white;
+            margin-bottom: 16px;
+            letter-spacing: -2px;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .leaderboard-subtitle {
+            font-size: 1.3rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+            margin-bottom: 30px;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
+
+        /* Stats Cards */
+        .stats-container {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 20px 30px;
+            border-radius: 20px;
+            text-align: center;
+            color: white;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 800;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        /* Leaderboard Container */
+        .leaderboard-container {
+            max-width: 1000px;
+            margin: -40px auto 60px auto;
+            padding: 0 40px;
+            position: relative;
+            z-index: 3;
+        }
+
+        /* Filter Tabs */
+        .filter-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 40px;
+            background: var(--bg-card);
+            padding: 8px;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .filter-tab {
+            padding: 12px 24px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .filter-tab.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 15px rgba(227, 28, 28, 0.3);
+        }
+
+        .filter-tab:hover:not(.active) {
+            background: rgba(227, 28, 28, 0.1);
+            color: var(--primary);
+        }
+
+        /* Leaderboard Card */
+        .leaderboard-card {
+            background: var(--bg-card);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+        }
+
+        body.dark .leaderboard-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+        }
+
+        /* Leaderboard Header */
+        .leaderboard-table-header {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 20px 30px;
+            display: grid;
+            grid-template-columns: 80px 1fr 120px 100px;
+            align-items: center;
+            font-weight: 700;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        body.dark .leaderboard-table-header {
+            background: linear-gradient(135deg, #333 0%, #444 100%);
+        }
+
+        /* Player Rows */
+        .player-row {
+            display: grid;
+            grid-template-columns: 80px 1fr 120px 100px;
+            align-items: center;
+            padding: 20px 30px;
+            border-bottom: 1px solid var(--border-color);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .player-row::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(227, 28, 28, 0.05), transparent);
+            transition: var(--transition);
+        }
+
+        .player-row:hover::before {
+            left: 100%;
+        }
+
+        .player-row:hover {
+            transform: translateX(8px);
+            background: rgba(227, 28, 28, 0.02);
+            box-shadow: inset 4px 0 0 var(--primary);
+        }
+
+        .player-row:last-child {
+            border-bottom: none;
+        }
+
+        /* Rank Styling */
+        .rank {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-weight: 800;
+            font-size: 1.2rem;
+            position: relative;
+        }
+
+        /* Top 3 Rank Styling */
+        .rank.gold {
+            background: var(--gold);
+            color: #b8860b;
+            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
+            animation: goldGlow 2s ease-in-out infinite;
+        }
+
+        .rank.silver {
+            background: var(--silver);
+            color: #666;
+            box-shadow: 0 6px 20px rgba(192, 192, 192, 0.4);
+        }
+
+        .rank.bronze {
+            background: var(--bronze);
+            color: #8b4513;
+            box-shadow: 0 6px 20px rgba(205, 127, 50, 0.4);
+        }
+
+        .rank.gold::after {
+            content: '👑';
+            position: absolute;
+            top: -10px;
+            font-size: 20px;
+        }
+
+        @keyframes goldGlow {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .rank.regular {
+            background: linear-gradient(135deg, #f1f3f4 0%, #e8eaed 100%);
+            color: var(--text-secondary);
+            border: 2px solid var(--border-color);
+        }
+
+        body.dark .rank.regular {
+            background: linear-gradient(135deg, #444 0%, #555 100%);
+            border: 2px solid #666;
+        }
+
+        /* Player Info */
+        .player-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .player-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 800;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .player-avatar::before {
+            content: '';
+            position: absolute;
+            inset: 2px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #92a5f7 0%, #8b7ed8 100%);
+            z-index: -1;
+        }
+
+        .player-details h3 {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .player-status {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #00d4aa;
+            box-shadow: 0 0 8px rgba(0, 212, 170, 0.5);
+            animation: pulse 2s infinite;
+        }
+
+        /* Score Styling */
+        .score {
+            font-weight: 800;
+            font-size: 1.3rem;
+            color: var(--primary);
+            text-align: center;
+        }
+
+        .score-change {
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 20px;
+            text-align: center;
+        }
+
+        .score-change.up {
+            background: rgba(34, 197, 94, 0.1);
+            color: #22c55e;
+        }
+
+        .score-change.down {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        .score-change.same {
+            background: rgba(107, 114, 126, 0.1);
+            color: var(--text-muted);
+        }
+
+        /* Dark Mode Toggle */
+        .darkmode-fab {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            width: 56px;
+            height: 56px;
+            border: none;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), #fa6868);
+            color: white;
+            cursor: pointer;
+            z-index: 9999;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 25px rgba(227, 28, 28, 0.4);
+            transition: var(--transition);
+        }
+
+        .darkmode-fab:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 12px 35px rgba(227, 28, 28, 0.5);
+        }
+
+        body.dark .darkmode-fab {
+            background: linear-gradient(135deg, #eee, #fff);
+            color: #222;
+            box-shadow: 0 8px 25px rgba(255, 255, 255, 0.3);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            nav.sidebar {
+                width: 100vw;
+                height: 70px;
+                flex-direction: row;
+                padding: 12px 20px;
+            }
+
+            .sidebar-menu {
+                flex-direction: row;
+                gap: 8px;
+                justify-content: space-around;
+                padding: 0;
+            }
+
+            .sidebar-icon {
+                padding: 12px;
+                min-width: 48px;
+                border-radius: 12px;
+            }
+
+            .leaderboard-main {
+                margin-left: 0;
+                margin-top: 70px;
+            }
+
+            .leaderboard-title {
+                font-size: 2.5rem;
+            }
+
+            .leaderboard-container {
+                padding: 0 20px;
+            }
+
+            .leaderboard-table-header,
+            .player-row {
+                grid-template-columns: 60px 1fr 80px;
+                padding: 15px 20px;
+                gap: 12px;
+            }
+
+            .score-change {
+                display: none;
+            }
+
+            .stats-container {
+                gap: 15px;
+            }
+
+            .stat-card {
+                padding: 15px 20px;
+            }
+
+            .stat-number {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Loading Animation */
+        .player-row {
+            animation: slideInUp 0.6s ease-out;
+            animation-fill-mode: both;
+        }
+
+        .player-row:nth-child(1) { animation-delay: 0.1s; }
+        .player-row:nth-child(2) { animation-delay: 0.2s; }
+        .player-row:nth-child(3) { animation-delay: 0.3s; }
+        .player-row:nth-child(4) { animation-delay: 0.4s; }
+        .player-row:nth-child(5) { animation-delay: 0.5s; }
+        .player-row:nth-child(6) { animation-delay: 0.6s; }
+        .player-row:nth-child(7) { animation-delay: 0.7s; }
+        .player-row:nth-child(8) { animation-delay: 0.8s; }
+        .player-row:nth-child(9) { animation-delay: 0.9s; }
+        .player-row:nth-child(10) { animation-delay: 1.0s; }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <nav class="sidebar" id="sidebar" aria-label="Sidebar navigation">
+            <div class="sidebar-menu">
+                <a href="#" class="sidebar-icon" id="hamburger" aria-label="Toggle Sidebar">
+                    <svg viewBox="0 0 24 24">
+                        <line x1="3" y1="6" x2="21" y2="6"/>
+                        <line x1="3" y1="12" x2="21" y2="12"/>
+                        <line x1="3" y1="18" x2="21" y2="18"/>
+                    </svg>
+                    <span class="sidebar-label">Menu</span>
+                </a>
+                <a href="home.html" class="sidebar-icon" aria-label="Dashboard">
+                    <svg viewBox="0 0 24 24">
+                        <rect x="3" y="3" width="7" height="7" rx="1"/>
+                        <rect x="14" y="3" width="7" height="7" rx="1"/>
+                        <rect x="14" y="14" width="7" height="7" rx="1"/>
+                        <rect x="3" y="14" width="7" height="7" rx="1"/>
+                    </svg>
+                    <span class="sidebar-label">Dashboard</span>
+                </a>
+                <a href="cart.html" class="sidebar-icon" aria-label="Cart">
+                    <svg viewBox="0 0 24 24">
+                        <circle cx="9" cy="21" r="1" />
+                        <circle cx="20" cy="21" r="1" />
+                        <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6" />
+                    </svg>
+                    <span class="sidebar-label">Cart</span>
+                </a>
+                <a href="marketplace.html" class="sidebar-icon" aria-label="Marketplace">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M6 2l1 7h10l1-7"/>
+                        <rect x="2" y="9" width="20" height="7" rx="2"/>
+                    </svg>
+                    <span class="sidebar-label">Marketplace</span>
+                </a>
+                <a href="messages.html" class="sidebar-icon" aria-label="Messages" style="position: relative;">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h12a2 2 0 012 2z"/>
+                    </svg>
+                    <span class="sidebar-label">Messages</span>
+                    <div class="notification-badge">3</div>
+                </a>
+                <a href="wallet.html" class="sidebar-icon" aria-label="Wallet">
+                    <svg viewBox="0 0 24 24">
+                        <rect x="2" y="7" width="20" height="7" rx="2"/>
+                        <path d="M16 3h6v4"/>
+                    </svg>
+                    <span class="sidebar-label">Wallet</span>
+                </a>
+                <a href="#" class="sidebar-icon" aria-label="Leaderboard">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M17 3H7v4H17z"/>
+                        <path d="M5 8v3a6 6 0 0010 3"/>
+                        <path d="M19 8v3a6 6 0 01-10 3"/>
+                        <path d="M12 17v4"/>
+                        <path d="M7 21h10"/>
+                    </svg>
+                    <span class="sidebar-label">Leaderboard</span>
+                </a>
+                <a href="profile.html" class="sidebar-icon" aria-label="My Profile">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    <span class="sidebar-label">My Profile</span>
+                </a>
+            </div>
+        </nav>
+
+        <!-- Main Leaderboard Content -->
+        <main class="leaderboard-main">
+            <!-- Premium Header -->
+            <section class="leaderboard-header">
+                <div class="header-content">
+                    <button class="back-btn" onclick="goBack()">
+                        ← Back to Dashboard
+                    </button>
+                    
+                    <h1 class="leaderboard-title">🏆 Leaderboard</h1>
+                    <p class="leaderboard-subtitle">Top performers in the UniKart community</p>
+                    
+                    <div class="stats-container">
+                        <div class="stat-card">
+                            <span class="stat-number" id="totalPlayers">156</span>
+                            <span class="stat-label">Total Players</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-number" id="activeToday">89</span>
+                            <span class="stat-label">Active Today</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-number" id="topScore">950</span>
+                            <span class="stat-label">Top Score</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Leaderboard Container -->
+            <div class="leaderboard-container">
+                <!-- Filter Tabs -->
+                <div class="filter-tabs">
+                    <button class="filter-tab active" data-filter="all">All Time</button>
+                    <button class="filter-tab" data-filter="weekly">This Week</button>
+                    <button class="filter-tab" data-filter="monthly">This Month</button>
+                    <button class="filter-tab" data-filter="friends">Friends</button>
+                </div>
+
+                <!-- Leaderboard Card -->
+                <div class="leaderboard-card">
+                    <!-- Table Header -->
+                    <div class="leaderboard-table-header">
+                        <div>Rank</div>
+                        <div>Player</div>
+                        <div>Score</div>
+                        <div class="desktop-only">Change</div>
+                    </div>
+
+                    <!-- Player Rows -->
+                    <div id="leaderboardData">
+                        <!-- Players will be dynamically inserted here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Dark Mode Toggle -->
+    <button class="darkmode-fab" id="darkmode-toggle" aria-label="Toggle dark mode">🌙</button>
+
+    <script>
+        // Sample leaderboard data
+        const leaderboardData = {
+            all: [
+                { name: 'Aryan Dhiman', score: 950, change: '+25', trend: 'up', status: 'Online' },
+                { name: 'Samriddhi Patel', score: 890, change: '+18', trend: 'up', status: 'Online' },
+                { name: 'Rohan Kumar', score: 835, change: '-5', trend: 'down', status: 'Away' },
+                { name: 'Priya Singh', score: 820, change: '+12', trend: 'up', status: 'Online' },
+                { name: 'Vikram Shah', score: 785, change: '+8', trend: 'up', status: 'Online' },
+                { name: 'Anjali Mehta', score: 770, change: '0', trend: 'same', status: 'Away' },
+                { name: 'Karan Gupta', score: 745, change: '+15', trend: 'up', status: 'Online' },
+                { name: 'Neha Sharma', score: 730, change: '-3', trend: 'down', status: 'Online' },
+                { name: 'Rahul Verma', score: 715, change: '+20', trend: 'up', status: 'Away' },
+                { name: 'Divya Jain', score: 700, change: '+7', trend: 'up', status: 'Online' }
+            ],
+            weekly: [
+                { name: 'Samriddhi Patel', score: 285, change: '+45', trend: 'up', status: 'Online' },
+                { name: 'Aryan Dhiman', score: 270, change: '+30', trend: 'up', status: 'Online' },
+                { name: 'Karan Gupta', score: 240, change: '+60', trend: 'up', status: 'Online' },
+                { name: 'Priya Singh', score: 235, change: '+25', trend: 'up', status: 'Online' },
+                { name: 'Rahul Verma', score: 220, change: '+80', trend: 'up', status: 'Away' }
+            ],
+            monthly: [
+                { name: 'Aryan Dhiman', score: 850, change: '+120', trend: 'up', status: 'Online' },
+                { name: 'Samriddhi Patel', score: 790, change: '+95', trend: 'up', status: 'Online' },
+                { name: 'Priya Singh', score: 720, change: '+85', trend: 'up', status: 'Online' },
+                { name: 'Vikram Shah', score: 685, change: '+70', trend: 'up', status: 'Online' },
+                { name: 'Karan Gupta', score: 645, change: '+150', trend: 'up', status: 'Online' }
+            ],
+            friends: [
+                { name: 'Aryan Dhiman', score: 950, change: '+25', trend: 'up', status: 'Online' },
+                { name: 'Samriddhi Patel', score: 890, change: '+18', trend: 'up', status: 'Online' },
+                { name: 'Rohan Kumar', score: 835, change: '-5', trend: 'down', status: 'Away' },
+                { name: 'Priya Singh', score: 820, change: '+12', trend: 'up', status: 'Online' }
+            ]
+        };
+
+        let currentFilter = 'all';
+
+        // Initialize leaderboard
+        function initializeLeaderboard() {
+            renderLeaderboard();
+            setupFilterTabs();
+        }
+
+        // Render leaderboard data
+        function renderLeaderboard() {
+            const container = document.getElementById('leaderboardData');
+            const data = leaderboardData[currentFilter];
+            
+            container.innerHTML = '';
+            
+            data.forEach((player, index) => {
+                const rank = index + 1;
+                const playerRow = createPlayerRow(player, rank);
+                container.appendChild(playerRow);
+            });
+            
+            // Update stats
+            updateStats();
+        }
+
+        // Create player row element
+        function createPlayerRow(player, rank) {
+            const row = document.createElement('div');
+            row.className = 'player-row';
+            
+            // Determine rank class
+            let rankClass = 'regular';
+            if (rank === 1) rankClass = 'gold';
+            else if (rank === 2) rankClass = 'silver';
+            else if (rank === 3) rankClass = 'bronze';
+            
+            // Determine trend class
+            let trendClass = 'same';
+            let trendSymbol = '—';
+            if (player.trend === 'up') {
+                trendClass = 'up';
+                trendSymbol = '↗';
+            } else if (player.trend === 'down') {
+                trendClass = 'down';
+                trendSymbol = '↘';
+            }
+            
+            row.innerHTML = `
+                <div class="rank ${rankClass}">${rank}</div>
+                <div class="player-info">
+                    <div class="player-avatar">${player.name.charAt(0)}</div>
+                    <div class="player-details">
+                        <h3>${player.name}</h3>
+                        <div class="player-status">
+                            <div class="status-dot"></div>
+                            ${player.status}
+                        </div>
+                    </div>
+                </div>
+                <div class="score">${player.score.toLocaleString()}</div>
+                <div class="score-change ${trendClass} desktop-only">
+                    ${trendSymbol} ${player.change}
+                </div>
+            `;
+            
+            return row;
+        }
+
+        // Setup filter tabs
+        function setupFilterTabs() {
+            const tabs = document.querySelectorAll('.filter-tab');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // Remove active class from all tabs
+                    tabs.forEach(t => t.classList.remove('active'));
+                    
+                    // Add active class to clicked tab
+                    tab.classList.add('active');
+                    
+                    // Update current filter
+                    currentFilter = tab.dataset.filter;
+                    
+                    // Re-render leaderboard
+                    renderLeaderboard();
+                });
+            });
+        }
+
+        // Update statistics
+        function updateStats() {
+            const data = leaderboardData[currentFilter];
+            const totalPlayers = document.getElementById('totalPlayers');
+            const activeToday = document.getElementById('activeToday');
+            const topScore = document.getElementById('topScore');
+            
+            totalPlayers.textContent = data.length;
+            activeToday.textContent = data.filter(p => p.status === 'Online').length;
+            topScore.textContent = data[0]?.score.toLocaleString() || '0';
+        }
+
+        // Navigation
+        function goBack() {
+            if (document.referrer && document.referrer.includes(window.location.origin)) {
+                window.history.back();
+            } else {
+                window.location.href = 'home.html';
+            }
+        }
+
+        // Dark mode functionality
+        function initializeDarkMode() {
+            const darkMode = localStorage.getItem('darkMode') === 'true';
+            const toggleBtn = document.getElementById('darkmode-toggle');
+            
+            if (darkMode) {
+                document.body.classList.add('dark');
+                document.documentElement.setAttribute('data-theme', 'dark');
+                toggleBtn.textContent = '☀️';
+            } else {
+                document.body.classList.remove('dark');
+                document.documentElement.setAttribute('data-theme', 'light');
+                toggleBtn.textContent = '🌙';
+            }
+        }
+
+        function toggleDarkMode() {
+            const body = document.body;
+            const html = document.documentElement;
+            const toggleBtn = document.getElementById('darkmode-toggle');
+            
+            body.classList.toggle('dark');
+            const isDark = body.classList.contains('dark');
+            
+            html.setAttribute('data-theme', isDark ? 'dark' : 'light');
+            localStorage.setItem('darkMode', isDark);
+            
+            // Smooth toggle animation
+            toggleBtn.style.transform = 'scale(0.8)';
+            setTimeout(() => {
+                toggleBtn.textContent = isDark ? '☀️' : '🌙';
+                toggleBtn.style.transform = 'scale(1)';
+            }, 150);
+        }
+
+        // Sidebar functionality
+        function initializeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const hamburger = document.getElementById('hamburger');
+            let isExpanded = false;
+
+            hamburger.addEventListener('click', function(e) {
+                e.preventDefault();
+                isExpanded = !isExpanded;
+                sidebar.classList.toggle('expanded', isExpanded);
+            });
+
+            // Auto-collapse on mobile
+            if (window.innerWidth <= 768) {
+                document.addEventListener('click', function(e) {
+                    if (!sidebar.contains(e.target) && isExpanded) {
+                        sidebar.classList.remove('expanded');
+                        isExpanded = false;
+                    }
+                });
+            }
+        }
+
+        // Auto-refresh leaderboard data
+        function startAutoRefresh() {
+            setInterval(() => {
+                // Simulate small score changes
+                Object.keys(leaderboardData).forEach(filterKey => {
+                    leaderboardData[filterKey].forEach(player => {
+                        if (Math.random() < 0.1) { // 10% chance of change
+                            const change = Math.floor(Math.random() * 10) - 5;
+                            player.score = Math.max(0, player.score + change);
+                            player.change = change > 0 ? `+${change}` : change < 0 ? `${change}` : '0';
+                            player.trend = change > 0 ? 'up' : change < 0 ? 'down' : 'same';
+                        }
+                    });
+                    
+                    // Re-sort by score
+                    leaderboardData[filterKey].sort((a, b) => b.score - a.score);
+                });
+                
+                // Re-render if needed
+                renderLeaderboard();
+            }, 30000); // Update every 30 seconds
+        }
+
+        // Initialize everything
+        window.addEventListener('DOMContentLoaded', function() {
+            initializeLeaderboard();
+            initializeDarkMode();
+            initializeSidebar();
+            startAutoRefresh();
+            
+            // Event listeners
+            document.getElementById('darkmode-toggle').addEventListener('click', toggleDarkMode);
+            
+            console.log('🏆 Outstanding leaderboard loaded successfully!');
+        });
+    </script>
+</body>
+</html>

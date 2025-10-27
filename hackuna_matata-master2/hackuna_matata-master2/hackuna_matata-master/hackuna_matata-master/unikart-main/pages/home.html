@@ -1,0 +1,1300 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniKart - Home</title>
+    <base href="/" />
+    <!-- Apply dark mode immediately -->
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+  if (localStorage.getItem('darkMode') === 'true') {
+    document.documentElement.classList.add('dark');
+    document.body.classList.add('dark');
+  }
+});
+</script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f7faf7;
+            color: #222;
+            transition: background 0.3s, color 0.3s;
+            
+        }
+
+        body.dark {
+            background: #191c1c !important;
+            color: #f5f5f5 !important;
+        }
+
+        .container {
+  display: flex;
+  flex-direction: row;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+        /* Sidebar */
+        nav.sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 80px;
+            background: #e31c1c;
+            padding: 24px 0;
+            box-shadow: 2px 0 10px rgba(227, 28, 28, 0.1);
+            display: flex;
+            flex-direction: column;
+            transition: width 0.3s ease, background-color 0.3s ease;
+            user-select: none;
+            z-index: 1000;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        nav.sidebar.expanded {
+            width: 240px;
+        }
+
+        body.dark nav.sidebar {
+            background: #222 !important;
+            color: #ddd;
+        }
+
+        .sidebar-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+            padding: 0 16px;
+            flex-grow: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .sidebar-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #fff;
+            font-weight: 600;
+            font-size: 20px;
+            padding: 16px;
+            margin: 4px 0;
+            border-radius: 12px;
+            user-select: none;
+            text-decoration: none;
+            transition: background 0.3s, color 0.3s, transform 0.2s;
+            position: relative;
+            white-space: nowrap;
+            overflow: visible;
+            min-height: 48px;
+        }
+
+        .sidebar-icon:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: scale(1.05);
+        }
+
+        body.dark .sidebar-icon {
+            color: #ff6a6a;
+        }
+
+        body.dark .sidebar-icon:hover {
+            background: rgba(255, 106, 106, 0.15);
+        }
+
+        .sidebar-label {
+            margin-left: 20px;
+            opacity: 0;
+            white-space: nowrap;
+            transition: opacity 0.3s;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 16px;
+        }
+
+        nav.sidebar.expanded .sidebar-label {
+            opacity: 1;
+        }
+
+        .sidebar-icon svg {
+            width: 28px;
+            height: 28px;
+            stroke: currentColor;
+            flex-shrink: 0;
+            display: block;
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            background: #d61818;
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            min-width: 18px;
+            height: 18px;
+            line-height: 18px;
+            border-radius: 12px;
+            text-align: center;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        /* Main Content Area */
+        main.main-content {
+  margin-left: 80px; /* space for sidebar */
+  margin-right: 340px; /* space for right panel */
+  padding: 24px 32px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow-y: auto;
+  background: #f7faf7;
+  transition: margin-left 0.3s, background-color 0.3s, color 0.3s;
+  gap: 24px;
+}
+
+        nav.sidebar.expanded ~ main.main-content {
+            margin-left: 240px;
+        }
+
+        body.dark main.main-content {
+            background: #191c1c !important;
+            color: #f5f5f5 !important;
+        }
+
+        .main-section {
+            flex-grow: 3;
+            display: flex;
+            flex-direction: column;
+            margin-right: 20px;
+            height: 100%;
+            {% comment %} overflow: hidden; {% endcomment %}
+        }
+
+        /* Top Bar */
+        .top-bar {
+            display: flex;
+            align-items: center;
+            gap: 22px;
+            margin-bottom: 18px;
+            flex-shrink: 0;
+        }
+
+        .notification-btn {
+            background: #e31c1c;
+            border: none;
+            color: #fff;
+            padding: 14px;
+            border-radius: 16px;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 6px 20px #e31c1c30;
+            transition: all 0.2s;
+        }
+
+        .notification-btn:hover {
+            background: #c61616;
+        }
+
+        body.dark .notification-btn {
+            background: #a51010 !important;
+        }
+
+        .search-area {
+            flex: 1;
+            position: relative;
+            max-width: 600px;
+        }
+
+        .searchbar {
+            width: 100%;
+            padding: 15px 51px 15px 24px;
+            border: none;
+            border-radius: 30px;
+            background: #fff;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .searchbar:focus {
+            outline: none;
+            box-shadow: 0 0 10px rgba(227, 28, 28, 0.3);
+        }
+
+        body.dark .searchbar {
+            background: #232323 !important;
+            color: #f5f5f5 !important;
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 25px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 20px;
+            color: #e31c1c;
+            cursor: pointer;
+        }
+
+        .trending-title {
+            font-size: 2.2rem;
+            font-weight: 900;
+            margin-bottom: 12px;
+            color: #222;
+            letter-spacing: -1px;
+            flex-shrink: 0;
+        }
+
+        body.dark .trending-title {
+            color: #f5f5f5 !important;
+        }
+
+        .trending-title::after {
+            content: '';
+            display: block;
+            width: 60px;
+            height: 5px;
+            background: #e31c1c;
+            border-radius: 2px;
+            margin: 6px 0 0 0;
+        }
+
+        /* Carousel with Images */
+        .carousel-container {
+  flex: 0 0 200px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+
+        .carousel-wrapper {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #a3d8f4 0%, #b13537ff 70%);
+  box-shadow: 0 8px 40px #8a79ed44;
+  margin-bottom: 10px;
+}
+
+        body.dark .carousel-wrapper {
+  background: linear-gradient(135deg, #4a4a4a, #6a6a6a) !important;
+  box-shadow: 0 8px 32px #2a2f49;
+}
+
+        .carousel-track {
+            display: flex;
+            height: 100%;
+            transition: transform 0.8s ease-in-out;
+            animation: autoScroll 20s infinite linear;
+        }
+
+        @keyframes autoScroll {
+            0% { transform: translateX(0); }
+            20% { transform: translateX(0); }
+            25% { transform: translateX(-100%); }
+            45% { transform: translateX(-100%); }
+            50% { transform: translateX(-200%); }
+            70% { transform: translateX(-200%); }
+            75% { transform: translateX(-300%); }
+            95% { transform: translateX(-300%); }
+            100% { transform: translateX(-400%); }
+        }
+
+        .carousel-item {
+            min-width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            position: relative;
+        }
+
+        .carousel-product-image {
+            width: 140px;
+            height: 140px;
+            object-fit: cover;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            margin-right: 20px;
+        }
+
+        .carousel-content {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            padding: 20px;
+            flex: 1;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        body.dark .carousel-content {
+            background: rgba(40, 40, 40, 0.95);
+        }
+
+        .carousel-badge {
+            background: #e31c1c;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: inline-block;
+        }
+
+        .carousel-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #222;
+            margin-bottom: 6px;
+        }
+
+        body.dark .carousel-title {
+            color: #f5f5f5;
+        }
+
+        .carousel-desc {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        body.dark .carousel-desc {
+            color: #ccc;
+        }
+
+        .carousel-price {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #e31c1c;
+        }
+
+        .carousel-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ccc;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .dot.active {
+            background: #e31c1c;
+            transform: scale(1.2);
+            box-shadow: 0 2px 8px #e31c1c77;
+        }
+
+        /* Product Row Position */
+.product-row {
+  display: flex;
+  gap: 22px;
+  align-items: center;
+  flex-shrink: 0;
+  height: 90px;
+  margin-top: 8px;
+  overflow-x: auto;
+}
+
+        .mini-product-card {
+  width: 90px;
+  height: 90px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(255, 154, 158, 0.38);
+  cursor: pointer;
+  background-color: transparent !important;
+}
+
+
+        .mini-product-card:hover {
+            transform: translateY(-3px);
+        }
+
+        body.dark .mini-product-card {
+            background-color: transparent !important;
+        }
+
+        /* Add Product Button */
+        .add-product-btn {
+            width: 90px;
+            height: 90px;
+            border: 3px solid #e31c1c;
+            border-radius: 20px;
+            background: #fff;
+            color: #e31c1c;
+            font-size: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            user-select: none;
+        }
+
+        .add-product-btn:hover {
+            background: #fff5f5;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(227, 28, 28, 0.3);
+        }
+
+        body.dark .add-product-btn {
+            background: #232323 !important;
+            color: #f5f5f5 !important;
+            border-color: #e31c1c;
+        }
+
+        body.dark .add-product-btn:hover {
+            background: #333 !important;
+        }
+
+        .posted-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #e31c1c;
+            color: #fff;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 50%;
+            width: 26px;
+            height: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 10px #e31c1c55;
+            pointer-events: none;
+        }
+
+        /* Right Panel */
+        .right-panel {
+  width: 340px;
+  flex-shrink: 0;
+  background: #f9f9fb;
+  padding: 20px 15px;
+  height: 100vh;
+  overflow-y: auto;
+  box-shadow: -2px 0 18px #dce0ee33;
+  position: fixed;
+  right: 0;
+  top: 0;
+}
+
+        body.dark .right-panel {
+            background: #1f1f1f !important;
+        }
+
+        /* Profile Card */
+        .profile-card {
+            background: #fff;
+            border-radius: 0;
+            padding: 20px 15px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(133, 114, 204, 0.10);
+            transition: all 0.3s;
+            flex-shrink: 0;
+            overflow: visible;
+            display: flex;
+            flex-direction: column;
+        }
+
+        body.dark .profile-card {
+            background: #242424 !important;
+        }
+
+        .profile-pic {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(120deg,#928cde,#8ab7dd);
+            border-radius: 15px;
+            margin: 0 auto 10px;
+            background-size: cover;
+            background-position: center;
+            flex-shrink: 0;
+        }
+
+        .profile-name {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #222;
+            transition: color 0.3s;
+            flex-shrink: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        body.dark .profile-name {
+            color: #f5f5f5 !important;
+        }
+
+        .profile-details {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+            line-height: 1.3;
+            flex-shrink: 0;
+            text-align: left;
+        }
+
+        .profile-details div {
+            margin-bottom: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        body.dark .profile-details {
+            color: #ccc !important;
+        }
+
+        .profile-lines {
+            width: 70px;
+            height: 3px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            margin: 8px auto 10px auto;
+            flex-shrink: 0;
+        }
+
+        body.dark .profile-lines {
+            background: #555 !important;
+        }
+
+        .stars {
+            margin: 8px 0 12px 0;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .star {
+            color: #ffd700;
+            margin: 0 1px;
+        }
+
+        .profile-action {
+            width: 100%;
+            background: #f3f4f6;
+            border: none;
+            padding: 12px 0;
+            border-radius: 10px;
+            margin: 6px 0;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 14px;
+            color: #222;
+            box-shadow: 0 1px 8px #d4d4df18;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            display: block !important;
+            visibility: visible !important;
+        }
+
+        .profile-action:hover {
+            background: #ffe5e5;
+            transform: translateY(-1px);
+        }
+
+        body.dark .profile-action {
+            background: #333 !important;
+            color: #f5f5f5 !important;
+        }
+
+        body.dark .profile-action:hover {
+            background: #444 !important;
+        }
+        .edit-profile-btn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 16px 36px;
+    border-radius: 28px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    box-shadow: 0 6px 20px rgba(227, 28, 28, 0.3);
+    user-select: none;
+    /* Add subtle text shadow */
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    /* Add slight letter spacing */
+    letter-spacing: 0.03em;
+}
+
+.edit-profile-btn:hover {
+    background: #b01212;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(177, 18, 18, 0.5);
+    /* Slightly brighten text on hover */
+    color: #fff9f9;
+}
+
+.edit-profile-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(227, 28, 28, 0.6);
+}
+
+
+        /* Leaderboard */
+        .leaderboard-card {
+            background: #fff;
+            border-radius: 0;
+            padding: 15px;
+            box-shadow: 0 4px 15px #c59ce87a;
+            transition: all 0.3s;
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
+        }
+
+        body.dark .leaderboard-card {
+            background: #242424 !important;
+        }
+
+        .leaderboard-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #222;
+            text-align: left;
+        }
+
+        body.dark .leaderboard-title {
+            color: #f5f5f5 !important;
+        }
+
+        .leaderboard-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            padding: 4px 0;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .leaderboard-row:hover {
+            background: #f8f9fa;
+            transform: translateX(3px);
+        }
+
+        body.dark .leaderboard-row:hover {
+            background: #333 !important;
+        }
+
+        .lb-icon {
+            width: 12px;
+            height: 12px;
+            background: #e31c1c;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+
+        .lb-name {
+            flex: 1;
+            font-weight: 600;
+            color: #222;
+            font-size: 12px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        body.dark .lb-name {
+            color: #f5f5f5 !important;
+        }
+
+        .lb-score {
+            font-weight: 700;
+            color: #666;
+            font-size: 11px;
+            flex-shrink: 0;
+        }
+
+        body.dark .lb-score {
+            color: #ccc !important;
+        }
+
+        /* Dark Mode Toggle */
+        button.darkmode-fab {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            width: 48px;
+            height: 48px;
+            font-size: 24px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            background: #e31c1c;
+            color: white;
+            box-shadow: 0 0 15px rgba(227, 28, 28, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            transition: background-color 0.3s, color 0.3s;
+            z-index: 9999;
+        }
+
+        button.darkmode-fab:hover {
+            background: #b01212;
+        }
+
+        body.dark button.darkmode-fab {
+            background: #eee;
+            color: #222;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+        }
+
+        /* Responsive */
+        @media (max-width: 950px) {
+            .right-panel {
+                display: none;
+            }
+        }
+
+        @media (max-width: 720px) {
+            .container {
+                flex-direction: column;
+                height: 100vh;
+                overflow: auto;
+            }
+
+            nav.sidebar {
+                flex-direction: row;
+                width: 100vw;
+                height: 70px;
+                border-radius: 0 0 24px 24px;
+            }
+
+            .sidebar-menu {
+                flex-direction: row;
+                gap: 16px;
+                justify-content: space-around;
+                padding: 0;
+            }
+
+            .sidebar-icon {
+                padding: 12px;
+                min-width: 48px;
+                min-height: 48px;
+            }
+
+            main.main-content {
+                margin-left: 0;
+                margin-top: 70px;
+                padding: 18px 6vw;
+            }
+
+            button.darkmode-fab {
+                bottom: 16px;
+                right: 16px;
+                width: 45px;
+                height: 45px;
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <nav class="sidebar" id="sidebar" aria-label="Sidebar navigation">
+            <div class="sidebar-menu">
+                <a href="#" class="sidebar-icon" id="hamburger" aria-label="Toggle Sidebar">
+                    <svg viewBox="0 0 24 24">
+                        <line x1="3" y1="6" x2="21" y2="6"/>
+                        <line x1="3" y1="12" x2="21" y2="12"/>
+                        <line x1="3" y1="18" x2="21" y2="18"/>
+                    </svg>
+                    <span class="sidebar-label">Menu</span>
+                </a>
+                <a href="#" class="sidebar-icon" aria-label="Dashboard" onclick="handleDashboardClick(); return false;">
+                    <svg viewBox="0 0 24 24">
+                        <rect x="3" y="3" width="7" height="7" rx="1"/>
+                        <rect x="14" y="3" width="7" height="7" rx="1"/>
+                        <rect x="14" y="14" width="7" height="7" rx="1"/>
+                        <rect x="3" y="14" width="7" height="7" rx="1"/>
+                    </svg>
+                    <span class="sidebar-label">Dashboard</span>
+                </a>
+                <!-- FIXED CART LINK -->
+                <a href="{% url 'cart' %}" class="sidebar-icon" aria-label="Cart">
+                    <svg viewBox="0 0 24 24">
+                        <circle cx="9" cy="21" r="1" />
+                        <circle cx="20" cy="21" r="1" />
+                        <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6" />
+                    </svg>
+                    <span class="sidebar-label">Cart</span>
+                </a>
+                <a href="{% url 'marketplace' %}" class="sidebar-icon" aria-label="Marketplace">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M6 2l1 7h10l1-7"/>
+                        <rect x="2" y="9" width="20" height="7" rx="2"/>
+                    </svg>
+                    <span class="sidebar-label">Marketplace</span>
+                </a>
+                <a href="{% url 'messages_dashboard' %}" class="sidebar-icon" aria-label="Messages" style="position: relative;">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h12a2 2 0 012 2z"/>
+                    </svg>
+                    <span class="sidebar-label">Messages</span>
+                    <div class="notification-badge" aria-label="New notifications">3</div>
+                </a>
+                <a href="{% url 'wallet' %}" class="sidebar-icon" aria-label="Wallet">
+                    <svg viewBox="0 0 24 24">
+                        <rect x="2" y="7" width="20" height="7" rx="2"/>
+                        <path d="M16 3h6v4"/>
+                    </svg>
+                    <span class="sidebar-label">Wallet</span>
+                </a>
+                <a href="{% url 'leaderboard' %}" class="sidebar-icon" aria-label="Leaderboard">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M17 3H7v4H17z"/>
+                        <path d="M5 8v3a6 6 0 0010 3"/>
+                        <path d="M19 8v3a6 6 0 01-10 3"/>
+                        <path d="M12 17v4"/>
+                        <path d="M7 21h10"/>
+                    </svg>
+                    <span class="sidebar-label">Leaderboard</span>
+                </a>
+                <a href="{% url 'profile' %}" class="sidebar-icon" aria-label="My Profile">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    <span class="sidebar-label">My Profile</span>
+                </a>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <section class="main-section" role="main">
+                <div class="top-bar">
+                    <button class="notification-btn" title="Notifications">🔔</button>
+                    <div class="search-area">
+                        <input
+                            type="text"
+                            class="searchbar"
+                            placeholder="Search products and users"
+                            id="searchInput"
+                        />
+                        <div class="search-icon">🔍</div>
+                    </div>
+                </div>
+                
+                <h2 class="trending-title">TRENDING</h2>
+                
+                <!-- Enhanced Carousel with Images -->
+                <!-- Trending Carousel Section -->
+<div class="carousel-container">
+  <div class="carousel-wrapper">
+    <div class="carousel-track" id="trendingCarouselTrack">
+      <!-- Trending items will be dynamically injected here -->
+    </div>
+  </div>
+  <div class="carousel-indicator" id="trendingCarouselIndicators">
+    <!-- Carousel dots will be dynamically injected here -->
+     <span class="dot active" data-slide="0"></span>
+                        <span class="dot" data-slide="1"></span>
+                        <span class="dot" data-slide="2"></span>
+                        <span class="dot" data-slide="3"></span>
+                        <span class="dot" data-slide="4"></span>
+  </div>
+</div>
+
+<!-- User-owned Products/Skills Boxes -->
+<div class="product-row" id="userProductsSkillsContainer">
+  <!-- User owned product/skill cards will be rendered here -->
+</div>
+
+
+            <!-- Right Panel -->
+            <aside class="right-panel">
+    <!-- Profile Card -->
+    <div class="profile-card">
+        <div class="profile-pic" id="userProfilePic"
+            {% if profile and profile.profile_pic %}
+                style="background-image: url('{{ profile.profile_pic.url }}');"
+            {% endif %}
+        ></div>
+        <div class="profile-name" id="userName">{{ user.username }}</div>
+        <div class="profile-details" id="userDetails">
+            <div><strong>Course:</strong> <span id="userCourse">{{ profile.course|default:"N/A" }}</span></div>
+            <div><strong>Skills:</strong> 
+                <span id="userSkills">
+                    {% if profile.skills %}
+                        {{ profile.skills|join:", " }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </span>
+            </div>
+            <div><strong>Interests:</strong> 
+                <span id="userInterests">
+                    {% if profile.interests %}
+                        {{ profile.interests|join:", " }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+        <div class="profile-lines"></div>
+        <div class="stars">
+            <span class="star">★</span>
+            <span class="star">★</span>
+            <span class="star">★</span>
+            <span class="star">★</span>
+            <span class="star">★</span>
+        </div>
+        <button class="profile-action" onclick="openProjects()">Projects</button>
+        <button class="profile-action" onclick="openCertifications()">Certifications</button>
+    </div>
+
+    <!-- Leaderboard INSIDE right panel -->
+    <div class="leaderboard-card">
+        <div class="leaderboard-title">Leaderboard</div>
+        <div class="leaderboard-row">
+            <span class="lb-icon"></span> 
+            <span class="lb-name">Salman Khan</span> 
+            <span class="lb-score">120</span>
+        </div>
+        <div class="leaderboard-row">
+            <span class="lb-icon"></span> 
+            <span class="lb-name">Shah Rukh Khan</span> 
+            <span class="lb-score">100</span>
+        </div>
+        <div class="leaderboard-row">
+            <span class="lb-icon"></span> 
+            <span class="lb-name">Tees Marr Khan</span> 
+            <span class="lb-score">90</span>
+        </div>
+        <div class="leaderboard-row">
+            <span class="lb-icon"></span> 
+            <span class="lb-name">Aamir Khan</span> 
+            <span class="lb-score">85</span>
+        </div>
+        <div class="leaderboard-row">
+            <span class="lb-icon"></span> 
+            <span class="lb-name">Aryan Plux</span> 
+            <span class="lb-score">80</span>
+        </div>
+    </div>
+
+
+            </aside>        </main>
+    </div>
+
+    <!-- Dark Mode Toggle -->
+    <button class="darkmode-fab" id="darkmode-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">🌙</button>
+
+    <script>
+        // Home page functionality
+        let postCount = 4;
+        let currentSlide = 0;
+        const currentUserId = {{ user.id }};
+
+        function handleDashboardClick() {
+            console.log('🏠 Already on home - scrolling to top');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function openMyProfile() {
+            console.log('👤 Opening My Profile...');
+            window.location.href = "{% url 'profile' %}";
+        }
+
+        function addProduct() {
+            console.log('🎯 Add Product button clicked!');
+            postCount++;
+            const postCountEl = document.getElementById('postCount');
+            if (postCountEl) {
+                postCountEl.textContent = postCount;
+            }
+            
+            const addBtn = document.getElementById('addProductBtn');
+            if (addBtn) {
+                addBtn.style.transform = 'scale(0.95)';
+                addBtn.style.opacity = '0.7';
+                setTimeout(() => {
+                    addBtn.style.transform = '';
+                    addBtn.style.opacity = '';
+                }, 200);
+            }
+            
+            console.log('🚀 Redirecting to upload page...');
+            setTimeout(() => {
+                window.location.href = "{% url 'upload' %}";
+            }, 300);
+        }
+
+        function openProjects() {
+            console.log('📂 Opening Projects...');
+            alert('🚀 Projects Section\n\nHere you can view and manage your projects:\n\n• Current Projects: 3\n• Completed Projects: 8\n• Total Projects: 11\n\nYou can add project management functionality here!');
+        }
+
+        function openCertifications() {
+            console.log('📜 Opening Certifications...');
+            alert('🎓 Certifications Section\n\nYour current certifications:\n\n• JavaScript Certified Developer\n• React.js Professional\n• UI/UX Design Fundamentals\n• Public Speaking Excellence\n\nYou can add certification management here!');
+        }
+
+        function updateDots() {
+            const dots = document.querySelectorAll('.dot');
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentSlide);
+            });
+        }
+
+        document.querySelectorAll('.dot').forEach((dot, index) => {
+            dot.addEventListener('click', () => {
+                currentSlide = index;
+                const track = document.getElementById('carouselTrack');
+                track.style.animation = 'none';
+                track.style.transform = translateX(-${index * 100}%);
+                updateDots();
+                setTimeout(() => {
+                    track.style.animation = 'autoScroll 20s infinite linear';
+                }, 3000);
+            });
+        });
+
+        setInterval(() => {
+            const totalSlides = 5;
+            currentSlide = Math.floor(Date.now() / 4000) % totalSlides;
+            updateDots();
+        }, 100);
+
+        function initializeDarkMode() {
+            const darkMode = localStorage.getItem('darkMode') === 'true';
+            const toggleBtn = document.getElementById('darkmode-toggle');
+            if (darkMode) {
+                document.body.classList.add('dark');
+                toggleBtn.textContent = '☀';
+            } else {
+                document.body.classList.remove('dark');
+                toggleBtn.textContent = '🌙';
+            }
+        }
+
+        function toggleDarkMode() {
+            const body = document.body;
+            const toggleBtn = document.getElementById('darkmode-toggle');
+            body.classList.toggle('dark');
+            const isDark = body.classList.contains('dark');
+            localStorage.setItem('darkMode', isDark);
+            toggleBtn.textContent = isDark ? '☀' : '🌙';
+        }
+
+        window.addEventListener('DOMContentLoaded', function() {
+            
+            initializeDarkMode();
+  document.getElementById('darkmode-toggle').addEventListener('click', toggleDarkMode);
+            bindEvents();
+            
+            const addBtn = document.getElementById('addProductBtn');
+            if (addBtn) {
+                console.log('✅ Add Product button found and ready');
+                addBtn.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        addProduct();
+                    }
+                });
+            }
+        });
+
+
+        function bindEvents() {
+            const sidebar = document.getElementById('sidebar');
+            const hamburger = document.getElementById('hamburger');
+            hamburger.addEventListener('click', function(e) {
+                e.preventDefault();
+                sidebar.classList.toggle('expanded');
+            });
+
+            document.getElementById('darkmode-toggle').addEventListener('click', toggleDarkMode);
+            document.getElementById('searchInput').addEventListener('keypress', handleSearch);
+        }
+
+        function handleSearch(e) {
+    if (e.key === 'Enter') {
+        const query = e.target.value.trim();
+        if (query.length > 0) {
+            console.log('Searching for:', query);
+            window.location.href = "{% url 'marketplace' %}" + "?search=" + encodeURIComponent(query);
+        }
+    }
+}
+
+
+        function openProduct(productId) {
+            console.log('Opening product:', productId);
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = "{% url 'login' %}";
+        }
+
+        window.logout = logout;
+
+        // Data from backend passed as JSON embedded in template
+const userProductsSkills = {{ user_products_skills|safe }};
+const trendingItems = {{ trending_items|safe }};
+
+// Helper: create card markup for an item (same style as marketplace cards)
+function createProductSkillCard(item) {
+  const card = document.createElement('article');
+  card.className = 'mini-product-card';
+
+  // Show image only if current user is owner, else placeholder
+  const isOwner = (item.type === 'product' && item.seller_id === currentUserId) ||
+                  (item.type === 'skill' && item.provider_id === currentUserId);
+
+  const imgSrc = isOwner && item.image_url ? item.image_url : 'https://via.placeholder.com/140?text=No+Image';
+
+  card.style.backgroundImage = url(${imgSrc});
+  card.style.backgroundSize = 'cover';
+  card.style.backgroundPosition = 'center';
+  card.title = ${item.title} (${item.type === 'skill' ? 'Skill' : 'Product'});
+
+  // Add click behavior as needed:
+  card.addEventListener('click', () => {
+    // You can route to product/skill details page here
+    console.log(Clicked ${item.type}: ${item.title} (ID: ${item.id}));
+  });
+
+  return card;
+}
+
+// Render user-owned product/skill cards into container
+function renderUserProductsSkills() {
+  const container = document.getElementById('userProductsSkillsContainer');
+  container.innerHTML = ''; // Clear existing
+
+  if (userProductsSkills.length === 0) {
+    container.innerHTML = '<p>No products or skills found for you.</p>';
+  } else {
+    userProductsSkills.forEach(item => {
+      const card = createProductSkillCard(item);
+      container.appendChild(card);
+    });
+  }
+
+  // --- Add the plus sign card ---
+  const addBtn = document.createElement('article');
+  addBtn.className = 'mini-product-card add-product-btn';
+  addBtn.title = 'Add Product / Skill';
+  addBtn.innerHTML = '<span style="font-size:36px;display:flex;align-items:center;justify-content:center;width:100%;height:100%;">+</span>';
+  addBtn.addEventListener('click', function() {
+    window.location.href = "{% url 'upload' %}";
+  });
+
+  // Keyboard accessibility
+  addBtn.tabIndex = 0;
+  addBtn.setAttribute('role', 'button');
+  addBtn.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      window.location.href = "{% url 'upload' %}";
+    }
+  });
+
+  container.appendChild(addBtn);
+}
+
+function renderTrendingCarousel() {
+  const track = document.getElementById('trendingCarouselTrack');
+  const indicators = document.getElementById('trendingCarouselIndicators');
+  track.innerHTML = '';
+  indicators.innerHTML = '';
+
+  trendingItems.forEach((item, index) => {
+    const slide = document.createElement('div');
+    slide.className = 'carousel-item';
+
+    slide.innerHTML = `
+      <img src="${item.image_url || 'https://via.placeholder.com/140?text=No+Image'}"
+        alt="${item.title}" class="carousel-product-image" />
+      <div class="carousel-content">
+        <span class="carousel-badge">${item.type === 'skill' ? 'SKILL' : 'PRODUCT'}</span>
+        <div class="carousel-title">${item.title}</div>
+        <div class="carousel-desc">${item.category}</div>
+        <div class="carousel-price">₹${item.price.toLocaleString()}</div>
+      </div>
+    `;
+
+    track.appendChild(slide);
+
+    const dot = document.createElement('span');
+    dot.className = 'dot';
+    if (index === 0) dot.classList.add('active');
+    dot.dataset.slide = index;
+    dot.addEventListener('click', () => {
+      currentSlide = index;
+      updateCarousel();
+    });
+    indicators.appendChild(dot);
+  });
+}
+
+function updateCarousel() {
+  const track = document.getElementById('trendingCarouselTrack');
+  const dots = document.querySelectorAll('#trendingCarouselIndicators .dot');
+  track.style.transform = translateX(-${currentSlide * 100}%);
+  dots.forEach((dot, idx) => {
+    dot.classList.toggle('active', idx === currentSlide);
+  });
+}
+
+function autoAdvanceCarousel() {
+  currentSlide = (currentSlide + 1) % trendingItems.length;
+  updateCarousel();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderUserProductsSkills();
+  renderTrendingCarousel();
+  setInterval(autoAdvanceCarousel, 4000); // auto-advance every 4s
+});
+
+    </script>
+</body>
+</html>

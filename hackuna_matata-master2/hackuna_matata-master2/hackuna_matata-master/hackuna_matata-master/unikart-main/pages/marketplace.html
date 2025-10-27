@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Marketplace with Functional Filters and Dark Mode</title>
+<style>
+  * {
+    margin: 0; padding: 0; box-sizing: border-box;
+  }
+  
+  /* ✨ ENHANCED CUSTOM SCROLLBAR */
+  ::-webkit-scrollbar {
+    width: 14px;
+    height: 14px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: #f1f2f6;
+    border-radius: 12px;
+    box-shadow: inset 0 0 6px rgba(0,0,0,0.05);
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(45deg, #e31c1c, #fa6868);
+    border-radius: 12px;
+    border: 2px solid #f1f2f6;
+    box-shadow: 0 2px 8px rgba(227, 28, 28, 0.3);
+    transition: all 0.3s ease;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(45deg, #c61616, #e55555);
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(227, 28, 28, 0.4);
+  }
+  
+  /* Firefox Scrollbar */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #e31c1c #f1f2f6;
+  }
+  
+  /* Dark Mode Scrollbar */
+  body.dark ::-webkit-scrollbar-track {
+    background: #2a2a2a;
+    box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+  }
+  
+  body.dark ::-webkit-scrollbar-thumb {
+    background: linear-gradient(45deg, #ff5c5c, #ff8a8a);
+    border: 2px solid #2a2a2a;
+    box-shadow: 0 2px 8px rgba(255, 92, 92, 0.3);
+  }
+  
+  body.dark ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(45deg, #ff4757, #ff7675);
+    box-shadow: 0 4px 12px rgba(255, 92, 92, 0.4);
+  }
+  
+  body.dark * {
+    scrollbar-color: #ff5c5c #2a2a2a;
+  }
+  
+  body, html {
+    height: 100%; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f9fafb; color: #222; overflow: hidden;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  body.dark {
+    background: #191c1c; color: #eee;
+  }
+  .container {
+    height: 100vh; display: flex; width: 100vw;
+  }
+  
+  /* Sidebar - Matching Home Page Style */
+  nav.sidebar {
+    position: fixed; top: 0; left: 0; height: 100vh;
+    width: 80px; background: #e31c1c;
+    padding: 24px 0;
+    box-shadow: 2px 0 10px rgba(227, 28, 28, 0.1);
+    display: flex; flex-direction: column;
+    transition: width 0.3s ease, background-color 0.3s ease;
+    user-select: none;
+    z-index: 1000;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  nav.sidebar.expanded { width: 240px; }
+  body.dark nav.sidebar {
+    background: #222 !important; color: #ddd;
+  }
+  
+  .sidebar-menu {
+    display: flex; flex-direction: column; gap: 22px; padding: 0 16px; 
+    flex-grow: 1; overflow-y: auto; overflow-x: hidden;
+  }
+  
+  .sidebar-icon {
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    color: #fff; font-weight: 600; font-size: 20px;
+    padding: 16px; margin: 4px 0; border-radius: 12px;
+    user-select: none; text-decoration: none;
+    transition: background 0.3s, color 0.3s, transform 0.2s;
+    position: relative; white-space: nowrap; overflow: visible;
+    min-height: 48px;
+  }
+  .sidebar-icon:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: scale(1.05);
+  }
+  body.dark .sidebar-icon {
+    color: #ff6a6a;
+  }
+  body.dark .sidebar-icon:hover {
+    background: rgba(255, 106, 106, 0.15);
+  }
+  
+  .sidebar-label {
+    margin-left: 20px; opacity: 0; white-space: nowrap;
+    transition: opacity 0.3s; overflow: hidden; text-overflow: ellipsis;
+    font-size: 16px;
+  }
+  nav.sidebar.expanded .sidebar-label { opacity: 1; }
+  
+  .sidebar-icon svg {
+    width: 28px; height: 28px; stroke: currentColor; flex-shrink: 0;
+    display: block; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  }
+  
+  .notification-badge {
+    position: absolute; top: 6px; right: 6px;
+    background: #d61818; color: white; font-size: 10px; font-weight: 700;
+    min-width: 18px; height: 18px; line-height: 18px; border-radius: 12px;
+    text-align: center; pointer-events: none; user-select: none;
+  }
+  
+  main.main-content {
+    margin-left: 80px; padding: 24px 32px;
+    flex-grow: 1; background: #f9fafb;
+    display: flex; flex-direction: row;
+    height: 100vh; overflow-y: auto;
+    transition: margin-left 0.3s, background-color 0.3s, color 0.3s;
+    gap: 24px;
+  }
+  nav.sidebar.expanded ~ main.main-content { margin-left: 240px; }
+  body.dark main.main-content { background: #191c1c; color: #eee; }
+  .main-section { flex-grow: 3; display: flex; flex-direction: column; margin-right: 20px; }
+  
+  /* Simplified top bar - Only search now */
+  .top-bar {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+  .search-input {
+    width: 100%;
+    max-width: 600px;
+    padding: 16px 24px;
+    font-weight: 600;
+    border-radius: 30px;
+    border: 2px solid #e31c1c;
+    outline: none;
+    color: #222;
+    font-size: 1.1rem;
+    transition: border-color 0.3s, background-color 0.3s, color 0.3s;
+  }
+  body.dark .search-input {
+    background: #232323;
+    border-color: #ff6a6a;
+    color: #eee;
+  }
+  .search-input:focus {
+    box-shadow: 0 0 0 4px rgba(227, 28, 28, 0.1);
+  }
+  body.dark .search-input:focus {
+    box-shadow: 0 0 0 4px rgba(255, 106, 106, 0.1);
+  }
+  
+  .product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill,minmax(280px,1fr));
+    gap: 28px 26px;
+    overflow-y: auto;
+  }
+  .product-card {
+    background: #fff;
+    border-radius: 24px;
+    box-shadow: 0 10px 40px rgb(227 28 28 / 17%);
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    transition: background-color 0.3s, color 0.3s, transform 0.3s;
+  }
+  
+  .product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 50px rgb(227 28 28 / 25%);
+  }
+  
+  body.dark .product-card {
+    background: #222;
+    color: #eee;
+    box-shadow: 0 10px 40px #ff444470;
+  }
+  
+  body.dark .product-card:hover {
+    box-shadow: 0 15px 50px #ff444480;
+  }
+  
+  .product-image {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    border-radius: 16px;
+    margin-bottom: 18px;
+    transition: transform 0.3s ease;
+  }
+  
+  .product-card:hover .product-image {
+    transform: scale(1.02);
+  }
+  
+  .product-title {
+    font-weight: 700;
+    font-size: 1.3rem;
+    margin-bottom: 6px;
+    color: #e31c1c;
+  }
+  body.dark .product-title {
+    color: #ff6a6a;
+  }
+  .product-category,
+  .product-price,
+  .product-seller {
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .product-price {
+    font-size: 1.25rem;
+    color: #d00000;
+  }
+  .stars {
+    color: gold;
+    font-size: 1.2rem;
+    margin-bottom: 16px;
+  }
+  .card-actions {
+    margin-top: auto;
+    display: flex;
+    gap: 12px;
+  }
+  .btn {
+    flex: 1;
+    font-weight: 700;
+    border-radius: 22px;
+    border: none;
+    cursor: pointer;
+    padding: 14px;
+    transition: background-color 0.3s ease;
+  }
+  .btn-buy {
+    background: #e31c1c;
+    color: white;
+  }
+  .btn-buy:hover {
+    background: #c21818;
+  }
+  .btn-chat {
+    background: transparent;
+    border: 2px solid #e31c1c;
+    color: #e31c1c;
+  }
+  .btn-chat:hover {
+    background: #ffeaea;
+  }
+  body.dark .btn-chat {
+    border-color: #ff6a6a;
+    color: #ff6a6a;
+  }
+  body.dark .btn-chat:hover {
+    background: #441111;
+  }
+  
+  /* Enhanced Filter Pane */
+  aside.filter-pane {
+    background: #fff;
+    flex-shrink: 0;
+    max-width: 380px;
+    min-width: 380px;
+    padding: 28px 24px;
+    border-radius: 22px;
+    box-shadow: 0 12px 40px rgb(227 28 28 / 17%);
+    overflow-y: auto;
+    transition: background-color 0.3s, color 0.3s;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    height: calc(100vh - 120px);
+  }
+  body.dark aside.filter-pane {
+    background: #222;
+    color: #eee;
+    box-shadow: 0 12px 40px #ff444470;
+  }
+  
+  aside.filter-pane h2 {
+    font-size: 1.8rem;
+    color: #e31c1c;
+    font-weight: 800;
+    margin-bottom: 24px;
+    text-align: center;
+  }
+  body.dark aside.filter-pane h2 {
+    color: #ff6a6a;
+  }
+  
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 16px;
+  }
+  
+  .filter-label {
+    font-weight: 700;
+    margin-bottom: 8px;
+    font-size: 1.1rem;
+    color: #333;
+  }
+  body.dark .filter-label {
+    color: #f5f5f5;
+  }
+  
+  .filter-select,
+  .filter-input,
+  .filter-date {
+    width: 100%;
+    padding: 14px 18px;
+    border-radius: 18px;
+    border: 2px solid #e31c1c;
+    font-weight: 600;
+    font-size: 1rem;
+    outline: none;
+    cursor: pointer;
+    background: #fff;
+    color: #222;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+    appearance: none;
+  }
+  
+  .filter-select:focus,
+  .filter-input:focus,
+  .filter-date:focus {
+    box-shadow: 0 0 0 3px rgba(227, 28, 28, 0.1);
+  }
+  
+  body.dark .filter-select,
+  body.dark .filter-input,
+  body.dark .filter-date {
+    background: #232323;
+    border-color: #ff6a6a;
+    color: #eee;
+  }
+  
+  body.dark .filter-select:focus,
+  body.dark .filter-input:focus,
+  body.dark .filter-date:focus {
+    box-shadow: 0 0 0 3px rgba(255, 106, 106, 0.1);
+  }
+  
+  .filter-input::placeholder {
+    color: #888;
+  }
+  body.dark .filter-input::placeholder {
+    color: #aaa;
+  }
+  
+  /* Filter buttons */
+  .filter-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
+  }
+  
+  .apply-filters-btn {
+    background: linear-gradient(135deg, #e31c1c 0%, #fa6868 100%);
+    color: white;
+    border: none;
+    font-weight: 700;
+    font-size: 1.1rem;
+    padding: 16px;
+    border-radius: 22px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px rgba(227, 28, 28, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .apply-filters-btn:hover {
+    background: linear-gradient(135deg, #c61616 0%, #e55555 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(227, 28, 28, 0.4);
+  }
+  
+  .clear-filters-btn {
+    background: transparent;
+    color: #e31c1c;
+    border: 2px solid #e31c1c;
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 12px;
+    border-radius: 18px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .clear-filters-btn:hover {
+    background: #fceaea;
+  }
+  
+  body.dark .clear-filters-btn {
+    color: #ff6a6a;
+    border-color: #ff6a6a;
+  }
+  
+  body.dark .clear-filters-btn:hover {
+    background: rgba(255, 106, 106, 0.1);
+  }
+  
+  /* Results counter */
+  .results-info {
+    padding: 12px 0;
+    font-weight: 600;
+    color: #666;
+    border-top: 2px solid #f0f0f0;
+    margin-top: 16px;
+    text-align: center;
+  }
+  
+  body.dark .results-info {
+    color: #ccc;
+    border-top-color: #444;
+  }
+  
+  button.darkmode-fab {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    width: 48px;
+    height: 48px;
+    font-size: 24px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    background: #e31c1c;
+    color: white;
+    box-shadow: 0 0 15px rgba(227, 28, 28, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    transition: background-color 0.3s, color 0.3s;
+    z-index: 9999;
+  }
+  button.darkmode-fab:hover {
+    background: #b01212;
+  }
+  body.dark button.darkmode-fab {
+    background: #eee;
+    color: #222;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+  }
+  
+  @media (max-width: 900px) {
+    main.main-content {
+      flex-direction: column;
+      padding: 16px 12px;
+    }
+    aside.filter-pane {
+      max-width: 100%;
+      min-width: unset;
+      width: 100%;
+      height: auto;
+      margin-top: 24px;
+      padding: 20px;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    nav.sidebar {
+      width: 100vw; height: 70px; flex-direction: row; padding: 12px 20px;
+    }
+    .sidebar-menu { flex-direction: row; gap: 16px; justify-content: space-around; padding: 0; }
+    .sidebar-icon { padding: 12px; min-width: 48px; min-height: 48px; }
+    main.main-content { margin-left: 0; margin-top: 70px; }
+    
+    .top-bar {
+      margin-bottom: 16px;
+    }
+    .search-input {
+      padding: 12px 18px;
+      font-size: 1rem;
+    }
+  }
+</style>
+<!-- Dark mode script in head -->
+<script>
+(function() {
+  const darkMode = localStorage.getItem('darkMode') === 'true';
+  if (darkMode) {
+    document.documentElement.classList.add('dark');
+    document.body.classList.add('dark');
+  }
+})();
+</script>
+</head>
+<body>
+  <div class="container">
+    <!-- Sidebar - Matching Home Page -->
+    <nav class="sidebar" id="sidebar" aria-label="Sidebar navigation">
+      <div class="sidebar-menu">
+        <a href="#" class="sidebar-icon" id="hamburger" aria-label="Toggle Sidebar">
+          <svg viewBox="0 0 24 24">
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+          <span class="sidebar-label">Menu</span>
+        </a>
+        <a href="home.html" class="sidebar-icon" aria-label="Dashboard">
+          <svg viewBox="0 0 24 24">
+            <rect x="3" y="3" width="7" height="7" rx="1"/>
+            <rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="14" y="14" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/>
+          </svg>
+          <span class="sidebar-label">Dashboard</span>
+        </a>
+        <a href="cart.html" class="sidebar-icon" aria-label="Cart">
+          <svg viewBox="0 0 24 24">
+            <circle cx="9" cy="21" r="1" />
+            <circle cx="20" cy="21" r="1" />
+            <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6" />
+          </svg>
+          <span class="sidebar-label">Cart</span>
+        </a>
+        <a href="#" class="sidebar-icon" aria-label="Marketplace" style="background: rgba(255, 255, 255, 0.15);">
+          <svg viewBox="0 0 24 24">
+            <path d="M6 2l1 7h10l1-7"/>
+            <rect x="2" y="9" width="20" height="7" rx="2"/>
+          </svg>
+          <span class="sidebar-label">Marketplace</span>
+        </a>
+        <a href="messages.html" class="sidebar-icon" aria-label="Messages" style="position: relative;">
+          <svg viewBox="0 0 24 24">
+            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h12a2 2 0 012 2z"/>
+          </svg>
+          <span class="sidebar-label">Messages</span>
+          <div class="notification-badge" aria-label="New notifications">3</div>
+        </a>
+        <a href="wallet.html" class="sidebar-icon" aria-label="Wallet">
+          <svg viewBox="0 0 24 24">
+            <rect x="2" y="7" width="20" height="7" rx="2"/>
+            <path d="M16 3h6v4"/>
+          </svg>
+          <span class="sidebar-label">Wallet</span>
+        </a>
+        <a href="leaderboard.html" class="sidebar-icon" aria-label="Leaderboard">
+          <svg viewBox="0 0 24 24">
+            <path d="M17 3H7v4H17z"/>
+            <path d="M5 8v3a6 6 0 0010 3"/>
+            <path d="M19 8v3a6 6 0 01-10 3"/>
+            <path d="M12 17v4"/>
+            <path d="M7 21h10"/>
+          </svg>
+          <span class="sidebar-label">Leaderboard</span>
+        </a>
+        <a href="profile.html" class="sidebar-icon" aria-label="My Profile">
+          <svg viewBox="0 0 24 24">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+          <span class="sidebar-label">My Profile</span>
+        </a>
+      </div>
+    </nav>
+
+    <main class="main-content">
+      <section class="main-section" role="main">
+        <!-- Simplified top bar - Only search -->
+        <div class="top-bar">
+          <input id="search-input" type="search" aria-label="Search products and skills" class="search-input"
+            placeholder="Search products and skills..." />
+        </div>
+        
+        <section class="product-grid" id="product-grid" aria-label="Marketplace products and skills" tabindex="0">
+          <!-- product cards will be filtered/displayed here -->
+        </section>
+      </section>
+      
+      <!-- Enhanced Filter Pane with All Filters -->
+      <aside class="filter-pane" role="region" aria-label="Marketplace Filters" tabindex="0">
+        <h2>Filters</h2>
+        
+        <!-- Category Filter -->
+        <div class="filter-group">
+          <label for="category-filter" class="filter-label">Category</label>
+          <select id="category-filter" class="filter-select" aria-label="Category filter">
+            <option value="">All Categories</option>
+            <option value="Books">Books</option>
+            <option value="Electronics">Electronics</option>
+            <option value="Design">Design</option>
+            <option value="Education">Education</option>
+            <option value="Coding">Coding</option>
+            <option value="Photography">Photography</option>
+            <option value="Fitness">Fitness</option>
+            <option value="Art">Art</option>
+          </select>
+        </div>
+
+        <!-- Sort By Filter -->
+        <div class="filter-group">
+          <label for="sort-filter" class="filter-label">Sort By</label>
+          <select id="sort-filter" class="filter-select" aria-label="Sort by filter">
+            <option value="popular">Most Popular</option>
+            <option value="newest">Newest First</option>
+            <option value="price-low">Price: Low to High</option>
+            <option value="price-high">Price: High to Low</option>
+            <option value="rating">Highest Rated</option>
+          </select>
+        </div>
+
+        <!-- Max Price Filter -->
+        <div class="filter-group">
+          <label for="filter-price" class="filter-label">Max Price (₹)</label>
+          <input type="number" id="filter-price" class="filter-input" min="0" placeholder="No max price" />
+        </div>
+
+        <!-- Condition Filter -->
+        <div class="filter-group">
+          <label for="filter-condition" class="filter-label">Condition</label>
+          <select id="filter-condition" class="filter-select">
+            <option value="">All Conditions</option>
+            <option value="New">New</option>
+            <option value="Like New">Like New</option>
+            <option value="Used">Used</option>
+          </select>
+        </div>
+
+        <!-- Upload Date Filter -->
+        <div class="filter-group">
+          <label for="filter-uploaded" class="filter-label">Uploaded After</label>
+          <input type="date" id="filter-uploaded" class="filter-date" />
+        </div>
+
+        <!-- Filter Actions -->
+        <div class="filter-actions">
+          <button id="apply-filters" class="apply-filters-btn">Apply Filters</button>
+          <button id="clear-filters" class="clear-filters-btn">Clear All</button>
+        </div>
+
+        <!-- Results Info -->
+        <div class="results-info" id="results-info">
+          Showing <span id="results-count">13</span> results
+        </div>
+      </aside>
+    </main>
+  </div>
+  <button class="darkmode-fab" id="darkmode-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">🌙</button>
+
+<script>
+  // 🖼️ REALISTIC PRODUCT IMAGES - High-quality Unsplash images
+  const productImages = {
+    "Wireless Headphones": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300&h=200&fit=crop&crop=center",
+    "Math Tutoring": "https://images.unsplash.com/photo-1509228468518-180dd4864904?w=300&h=200&fit=crop&crop=center",
+    "Logo Design Service": "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=300&h=200&fit=crop&crop=center",
+    "Photography Session": "https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=300&h=200&fit=crop&crop=center",
+    "Used Textbooks Bundle": "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=300&h=200&fit=crop&crop=center",
+    "Coding Help": "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=300&h=200&fit=crop&crop=center",
+    "Graphic Design": "https://images.unsplash.com/photo-1561998338-13ad7883b20f?w=300&h=200&fit=crop&crop=center",
+    "English Tutoring": "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=300&h=200&fit=crop&crop=center",
+    "Personal Training": "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=300&h=200&fit=crop&crop=center",
+    "Basic Tutoring": "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=300&h=200&fit=crop&crop=center",
+    "Art Lessons": "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=300&h=200&fit=crop&crop=center",
+    "Photography Workshop": "https://images.unsplash.com/photo-1452587925148-ce544e77e70d?w=300&h=200&fit=crop&crop=center",
+    "Software Development": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=300&h=200&fit=crop&crop=center"
+  };
+
+  // Enhanced product data with realistic images
+  const products = [
+    {id: 1, title: "Wireless Headphones", category: "Electronics", price: 2500, seller: "Aryan Plux", condition: "Like New", uploaded: "2025-01-12", rating: 4},
+    {id: 2, title: "Math Tutoring", category: "Education", price: 500, seller: "Priya Sharma", condition: "New", uploaded: "2025-04-15", rating: 5},
+    {id: 3, title: "Logo Design Service", category: "Design", price: 800, seller: "Neha Singh", condition: "New", uploaded: "2025-06-10", rating: 4},
+    {id: 4, title: "Photography Session", category: "Photography", price: 1200, seller: "Rahul Mehta", condition: "Used", uploaded: "2025-03-18", rating: 5},
+    {id: 5, title: "Used Textbooks Bundle", category: "Books", price: 700, seller: "Sahana Rao", condition: "Used", uploaded: "2024-12-10", rating: 4},
+    {id: 6, title: "Coding Help", category: "Coding", price: 700, seller: "Vikram Rani", condition: "Like New", uploaded: "2025-02-28", rating: 4},
+    {id: 7, title: "Graphic Design", category: "Design", price: 550, seller: "Anaya Mehta", condition: "New", uploaded: "2025-07-18", rating: 4},
+    {id: 8, title: "English Tutoring", category: "Education", price: 450, seller: "Saba Khan", condition: "New", uploaded: "2025-08-01", rating: 5},
+    {id: 9, title: "Personal Training", category: "Fitness", price: 700, seller: "Rohan Patel", condition: "Used", uploaded: "2025-02-05", rating: 4},
+    {id: 10, title: "Basic Tutoring", category: "Education", price: 300, seller: "Manish Mehta", condition: "Used", uploaded: "2024-11-02", rating: 3},
+    {id: 11, title: "Art Lessons", category: "Art", price: 400, seller: "Neha Gupta", condition: "New", uploaded: "2025-06-10", rating: 4},
+    {id: 12, title: "Photography Workshop", category: "Photography", price: 900, seller: "Rahul Desai", condition: "New", uploaded: "2025-05-25", rating: 5},
+    {id: 13, title: "Software Development", category: "Coding", price: 1200, seller: "Ankit Sharma", condition: "New", uploaded: "2025-07-14", rating: 5},
+  ];
+
+  let filteredProducts = [...products];
+
+  // Dashboard navigation function
+  function handleDashboardClick() {
+    console.log('Dashboard clicked from marketplace - redirecting to home');
+    window.location.href = 'home.html';
+  }
+
+  // My Profile function
+  function openMyProfile() {
+    console.log('👤 Opening My Profile from Marketplace...');
+    window.location.href = 'profile.html';
+  }
+
+  // Persistent dark mode functions
+  function initializeDarkMode() {
+    const darkMode = localStorage.getItem('darkMode') === 'true';
+    const toggleBtn = document.getElementById('darkmode-toggle');
+    
+    if (darkMode) {
+      document.body.classList.add('dark');
+      toggleBtn.textContent = '☀';
+    } else {
+      document.body.classList.remove('dark');
+      toggleBtn.textContent = '🌙';
+    }
+  }
+
+  function toggleDarkMode() {
+    const body = document.body;
+    const toggleBtn = document.getElementById('darkmode-toggle');
+    
+    body.classList.toggle('dark');
+    const isDark = body.classList.contains('dark');
+    
+    localStorage.setItem('darkMode', isDark);
+    toggleBtn.textContent = isDark ? '☀' : '🌙';
+  }
+
+  // Helper to create star icons string from rating number 1-5
+  function makeStars(rating) {
+    return "★".repeat(rating) + "☆".repeat(5 - rating);
+  }
+
+  // Sort products based on selected option
+  function sortProducts(productList, sortBy) {
+    const sorted = [...productList];
+    switch(sortBy) {
+      case 'newest':
+        return sorted.sort((a, b) => new Date(b.uploaded) - new Date(a.uploaded));
+      case 'price-low':
+        return sorted.sort((a, b) => a.price - b.price);
+      case 'price-high':
+        return sorted.sort((a, b) => b.price - a.price);
+      case 'rating':
+        return sorted.sort((a, b) => b.rating - a.rating);
+      case 'popular':
+      default:
+        return sorted.sort((a, b) => b.rating - a.rating);
+    }
+  }
+
+  // Update results count
+  function updateResultsCount(count) {
+    document.getElementById('results-count').textContent = count;
+  }
+
+  // 🖼️ Enhanced render products with realistic images
+  function renderProducts(productList) {
+    const grid = document.getElementById("product-grid");
+    grid.innerHTML = "";
+    
+    if(productList.length === 0) {
+      grid.innerHTML = `
+        <div style="grid-column: 1/-1; text-align: center; padding: 60px 20px; color: #666;">
+          <div style="font-size: 4rem; margin-bottom: 1rem;"></div>
+          <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">No products found</h3>
+          <p>Try adjusting your filters or search terms</p>
+        </div>
+      `;
+      updateResultsCount(0);
+      return;
+    }
+    
+    for(const product of productList) {
+      const card = document.createElement("article");
+      card.className = "product-card";
+      card.tabIndex = 0;
+      
+      // Get realistic image for product
+      const productImage = productImages[product.title] || `https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=300&h=200&fit=crop&crop=center&text=${encodeURIComponent(product.title)}`;
+      
+      card.innerHTML = `
+        <img src="${productImage}" alt="${product.title}" class="product-image" />
+        <h3 class="product-title">${product.title}</h3>
+        <div class="product-category">${product.category}</div>
+        <div class="product-price">₹${product.price.toLocaleString()}</div>
+        <div class="product-seller">Seller: ${product.seller}</div>
+        <div class="stars" aria-label="Rating: ${product.rating} out of 5 stars">${makeStars(product.rating)}</div>
+        <div class="card-actions">
+          <button class="btn btn-buy" onclick="buyProduct('${product.title}', ${product.price})">Buy Now</button>
+          <button class="btn btn-chat" onclick="chatWithSeller('${product.seller}')">Chat</button>
+        </div>
+      `;
+      grid.appendChild(card);
+    }
+    
+    updateResultsCount(productList.length);
+  }
+
+  // Enhanced interaction functions
+  function buyProduct(title, price) {
+    const result = confirm(`🛒 Buy "${title}" for ₹${price.toLocaleString()}?\n\nThis will redirect you to the payment page.`);
+    if (result) {
+      alert(`✅ Added "${title}" to cart!\n Redirecting to checkout...`);
+      // Here you would typically redirect to cart/checkout
+      setTimeout(() => {
+        window.location.href = 'cart.html';
+      }, 1500);
+    }
+  }
+
+  function chatWithSeller(seller) {
+    alert(`Opening chat with ${seller}...\n\nThis would open the messaging interface.`);
+    // Here you would typically open messaging
+    setTimeout(() => {
+      window.location.href = 'messages.html';
+    }, 1500);
+  }
+
+  // Apply filters only when button is clicked
+  function applyFilters() {
+    console.log('Applying filters...');
+    
+    const searchText = document.getElementById("search-input").value.toLowerCase();
+    const category = document.getElementById("category-filter").value;
+    const sortBy = document.getElementById("sort-filter").value;
+    const maxPriceStr = document.getElementById("filter-price").value;
+    const maxPrice = maxPriceStr === "" ? Infinity : parseFloat(maxPriceStr);
+    const condition = document.getElementById("filter-condition").value;
+    const uploadedAfterStr = document.getElementById("filter-uploaded").value;
+    const uploadedAfter = uploadedAfterStr === "" ? null : new Date(uploadedAfterStr);
+    
+    // Filter products
+    let filtered = products.filter(product => {
+      const matchesSearch = product.title.toLowerCase().includes(searchText) || 
+                           product.category.toLowerCase().includes(searchText) ||
+                           product.seller.toLowerCase().includes(searchText);
+      const matchesCategory = category === "" || product.category === category;
+      const matchesPrice = product.price <= maxPrice;
+      const matchesCondition = condition === "" || product.condition === condition;
+      const matchesUploaded = !uploadedAfter || new Date(product.uploaded) >= uploadedAfter;
+      
+      return matchesSearch && matchesCategory && matchesPrice && matchesCondition && matchesUploaded;
+    });
+    
+    // Sort filtered products
+    filtered = sortProducts(filtered, sortBy);
+    
+    filteredProducts = filtered;
+    renderProducts(filtered);
+    
+    // Visual feedback
+    const applyBtn = document.getElementById('apply-filters');
+    const originalText = applyBtn.textContent;
+    applyBtn.textContent = '✅ Applied!';
+    applyBtn.style.background = 'linear-gradient(135deg, #00d4aa, #7dd87f)';
+    setTimeout(() => {
+      applyBtn.textContent = originalText;
+      applyBtn.style.background = 'linear-gradient(135deg, #e31c1c 0%, #fa6868 100%)';
+    }, 1500);
+  }
+
+  // Clear all filters
+  function clearAllFilters() {
+    console.log('Clearing all filters...');
+    
+    document.getElementById("search-input").value = "";
+    document.getElementById("category-filter").value = "";
+    document.getElementById("sort-filter").value = "popular";
+    document.getElementById("filter-price").value = "";
+    document.getElementById("filter-condition").value = "";
+    document.getElementById("filter-uploaded").value = "";
+    
+    filteredProducts = [...products];
+    renderProducts(sortProducts(filteredProducts, 'popular'));
+    
+    // Visual feedback
+    const clearBtn = document.getElementById('clear-filters');
+    const originalText = clearBtn.textContent;
+    clearBtn.textContent = '✅ Cleared!';
+    clearBtn.style.background = '#00d4aa';
+    clearBtn.style.color = 'white';
+    setTimeout(() => {
+      clearBtn.textContent = originalText;
+      clearBtn.style.background = 'transparent';
+      clearBtn.style.color = '#e31c1c';
+    }, 1500);
+  }
+
+  // Initial render
+  renderProducts(products);
+
+  // Event listeners - Only on buttons, NOT on input changes
+  document.getElementById("apply-filters").addEventListener("click", applyFilters);
+  document.getElementById("clear-filters").addEventListener("click", clearAllFilters);
+
+  // Sidebar toggle
+  const sidebar = document.getElementById("sidebar");
+  const hamburger = document.getElementById("hamburger");
+  hamburger.addEventListener("click", e => {
+    e.preventDefault();
+    sidebar.classList.toggle("expanded");
+  });
+
+  // Dark mode toggle with persistence
+  document.getElementById("darkmode-toggle").addEventListener("click", toggleDarkMode);
+
+  // Initialize dark mode on page load
+  document.addEventListener('DOMContentLoaded', initializeDarkMode);
+
+  console.log('Enhanced marketplace with custom scrollbar and realistic images loaded!');
+</script>
+
+<!-- 🔥 AUTO-FILTER FROM HOME PAGE - ONLY ADDITION -->
+<script>
+window.addEventListener('DOMContentLoaded', function() {
+    // Check for filter parameter from home page
+    const urlParams = new URLSearchParams(window.location.search);
+    const category = urlParams.get('category');
+    const shouldFilter = urlParams.get('filter');
+    const storedFilter = localStorage.getItem('marketplaceFilter');
+    
+    if (category && shouldFilter) {
+        console.log(`Auto-applying filter: ${category}`);
+        
+        // Set the category filter dropdown
+        if (category === 'electronics') {
+            document.getElementById('category-filter').value = 'Electronics';
+        } else if (category === 'books') {
+            document.getElementById('category-filter').value = 'Books';
+        } else if (category === 'services') {
+            document.getElementById('category-filter').value = 'Education';
+        }
+        
+        // Trigger apply filters
+        applyFilters();
+        
+        // Show notification
+        showAutoFilterNotification(category);
+        
+        // Clear the stored filter
+        localStorage.removeItem('marketplaceFilter');
+    } else if (storedFilter) {
+        console.log(`Auto-applying filter from storage: ${storedFilter}`);
+        
+        // Set the category filter dropdown
+        if (storedFilter === 'electronics') {
+            document.getElementById('category-filter').value = 'Electronics';
+        } else if (storedFilter === 'books') {
+            document.getElementById('category-filter').value = 'Books';
+        } else if (storedFilter === 'services') {
+            document.getElementById('category-filter').value = 'Education';
+        }
+        
+        // Trigger apply filters
+        applyFilters();
+        
+        // Show notification
+        showAutoFilterNotification(storedFilter);
+        
+        localStorage.removeItem('marketplaceFilter');
+    }
+});
+
+function showAutoFilterNotification(category) {
+    // Create temporary notification
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #e31c1c;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        z-index: 1000;
+        font-weight: 600;
+        box-shadow: 0 4px 20px rgba(227, 28, 28, 0.3);
+        animation: slideIn 0.3s ease;
+    `;
+    notification.innerHTML = `🎯 Showing: <strong>${category.charAt(0).toUpperCase() + category.slice(1)}</strong>`;
+    
+    // Add animation
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    document.body.appendChild(notification);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.style.animation = 'slideIn 0.3s ease reverse';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniKart - Wallet Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Apply dark mode immediately -->
+    <script>
+    (function() {
+      const darkMode = localStorage.getItem('darkMode') === 'true';
+      if (darkMode) {
+        document.documentElement.classList.add('dark');
+        document.body.classList.add('dark');
+      }
+    })();
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body.dark {
+            background-color: #191c1c;
+            color: #f5f5f5;
+        }
+
+        .container {
+            min-height: 100vh;
+            display: flex;
+            background: transparent;
+        }
+
+        /* Sidebar */
+        nav.sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 80px;
+            background: #e31c1c;
+            padding: 24px 0;
+            box-shadow: 2px 0 10px rgba(227, 28, 28, 0.1);
+            display: flex;
+            flex-direction: column;
+            transition: width 0.3s ease, background-color 0.3s ease;
+            user-select: none;
+            z-index: 1000;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        nav.sidebar.expanded {
+            width: 240px;
+        }
+
+        body.dark nav.sidebar {
+            background: #222 !important;
+            color: #ddd;
+        }
+
+        .sidebar-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+            padding: 0 16px;
+            flex-grow: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .sidebar-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #fff;
+            font-weight: 600;
+            font-size: 20px;
+            padding: 16px;
+            margin: 4px 0;
+            border-radius: 12px;
+            user-select: none;
+            text-decoration: none;
+            transition: background 0.3s, color 0.3s, transform 0.2s;
+            position: relative;
+            white-space: nowrap;
+            overflow: visible;
+            min-height: 48px;
+        }
+
+        .sidebar-icon:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: scale(1.05);
+        }
+
+        body.dark .sidebar-icon {
+            color: #ff6a6a;
+        }
+
+        body.dark .sidebar-icon:hover {
+            background: rgba(255, 106, 106, 0.15);
+        }
+
+        .sidebar-label {
+            margin-left: 20px;
+            opacity: 0;
+            white-space: nowrap;
+            transition: opacity 0.3s;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 16px;
+        }
+
+        nav.sidebar.expanded .sidebar-label {
+            opacity: 1;
+        }
+
+        .sidebar-icon svg {
+            width: 28px;
+            height: 28px;
+            stroke: currentColor;
+            flex-shrink: 0;
+            display: block;
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            background: #d61818;
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            min-width: 18px;
+            height: 18px;
+            line-height: 18px;
+            border-radius: 12px;
+            text-align: center;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        /* Main Wallet Content */
+        .wallet-container {
+            margin-left: 80px;
+            padding: 2rem;
+            background-color: #f8f9fa;
+            min-height: 100vh;
+            transition: margin-left 0.3s, background-color 0.3s;
+            flex-grow: 1;
+            width: calc(100% - 80px);
+        }
+
+        nav.sidebar.expanded ~ .wallet-container {
+            margin-left: 240px;
+            width: calc(100% - 240px);
+        }
+
+        body.dark .wallet-container {
+            background-color: #191c1c;
+        }
+
+        /* Dark Mode Toggle */
+        .darkmode-fab {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            width: 54px;
+            height: 54px;
+            background: #e31c1c;
+            color: #fff;
+            border: none;
+            box-shadow: 0 4px 14px #e31c1c50;
+            font-size: 26px;
+            border-radius: 50%;
+            z-index: 99999;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .darkmode-fab:hover {
+            background: #b21c1c;
+            transform: scale(1.1);
+        }
+
+        body.dark .darkmode-fab {
+            background: #555 !important;
+        }
+
+        .wallet-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 2rem;
+            transition: color 0.3s;
+        }
+
+        body.dark .wallet-title {
+            color: #f5f5f5;
+        }
+
+        /* Statistics Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #e31c1c;
+            transition: transform 0.2s ease, background-color 0.3s;
+        }
+
+        body.dark .stat-card {
+            background: #242424;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        body.dark .stat-card:hover {
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .stat-card h3 {
+            color: #666;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            transition: color 0.3s;
+        }
+
+        body.dark .stat-card h3 {
+            color: #ccc;
+        }
+
+        .stat-card .amount {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #333;
+            margin: 0;
+            transition: color 0.3s;
+        }
+
+        body.dark .stat-card .amount {
+            color: #f5f5f5;
+        }
+
+        /* Actions Section */
+        .actions-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .action-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease, background-color 0.3s;
+        }
+
+        body.dark .action-card {
+            background: #242424;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .action-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .action-card h3 {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 1rem;
+            transition: color 0.3s;
+        }
+
+        body.dark .action-card h3 {
+            color: #f5f5f5;
+        }
+
+        .action-btn {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .sell-btn, .purchase-btn {
+            background: #4285f4;
+            color: white;
+        }
+
+        .sell-btn:hover, .purchase-btn:hover {
+            background: #3367d6;
+            transform: translateY(-1px);
+        }
+
+        .service-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #eee;
+            font-weight: 500;
+            color: #333;
+            transition: color 0.3s, border-color 0.3s;
+        }
+
+        body.dark .service-item {
+            color: #f5f5f5;
+            border-bottom-color: #444;
+        }
+
+        .service-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Transactions Section */
+        .transactions-section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            transition: background-color 0.3s;
+        }
+
+        body.dark .transactions-section {
+            background: #242424;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .transactions-section h3 {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 1rem;
+            transition: color 0.3s;
+        }
+
+        body.dark .transactions-section h3 {
+            color: #f5f5f5;
+        }
+
+        .transactions-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .transactions-table th {
+            text-align: left;
+            padding: 1rem;
+            background: #f8f9fa;
+            color: #666;
+            font-weight: 600;
+            border-bottom: 2px solid #eee;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+        }
+
+        body.dark .transactions-table th {
+            background: #333;
+            color: #ccc;
+            border-bottom-color: #555;
+        }
+
+        .transactions-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+            color: #333;
+            transition: color 0.3s, border-color 0.3s;
+        }
+
+        body.dark .transactions-table td {
+            color: #f5f5f5;
+            border-bottom-color: #444;
+        }
+
+        .transactions-table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        body.dark .transactions-table tbody tr:hover {
+            background-color: #333;
+        }
+
+        .transaction-positive {
+            color: #28a745 !important;
+            font-weight: 600;
+        }
+
+        .transaction-negative {
+            color: #dc3545 !important;
+            font-weight: 600;
+        }
+
+        .status-completed {
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            color: #ffc107;
+            font-weight: 600;
+        }
+
+        /* Wallet Actions */
+        .wallet-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+
+        .wallet-action-btn {
+            padding: 0.75rem 1.5rem;
+            background: #e31c1c;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .wallet-action-btn:hover {
+            background: #c61616;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(227, 28, 28, 0.3);
+        }
+
+        /* Back Section */
+        .back-section {
+            margin-top: 2rem;
+        }
+
+        .back-btn {
+            padding: 0.75rem 1.5rem;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+        }
+
+        /* Loading and success states */
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border: 1px solid #c3e6cb;
+        }
+
+        body.dark .success-message {
+            background: #1e4d23;
+            color: #7dd87f;
+            border-color: #2d5a31;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            nav.sidebar {
+                width: 100vw;
+                height: 70px;
+                flex-direction: row;
+                padding: 12px 20px;
+            }
+
+            .sidebar-menu {
+                flex-direction: row;
+                gap: 16px;
+                justify-content: space-around;
+                padding: 0;
+            }
+
+            .sidebar-icon {
+                padding: 12px;
+                min-width: 48px;
+                min-height: 48px;
+            }
+
+            .wallet-container {
+                margin-left: 0;
+                margin-top: 70px;
+                padding: 1rem;
+                width: 100%;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .actions-section {
+                grid-template-columns: 1fr;
+            }
+
+            .wallet-actions {
+                flex-direction: column;
+            }
+
+            .transactions-table {
+                font-size: 0.9rem;
+            }
+
+            .transactions-table th,
+            .transactions-table td {
+                padding: 0.5rem;
+            }
+
+            .darkmode-fab {
+                bottom: 20px;
+                right: 20px;
+                width: 45px;
+                height: 45px;
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <nav class="sidebar" id="sidebar" aria-label="Sidebar navigation">
+            <div class="sidebar-menu">
+                <a href="#" class="sidebar-icon" id="hamburger" aria-label="Toggle Sidebar">
+                    <svg viewBox="0 0 24 24">
+                        <line x1="3" y1="6" x2="21" y2="6"/>
+                        <line x1="3" y1="12" x2="21" y2="12"/>
+                        <line x1="3" y1="18" x2="21" y2="18"/>
+                    </svg>
+                    <span class="sidebar-label">Menu</span>
+                </a>
+                <a href="home.html" class="sidebar-icon" aria-label="Dashboard">
+                    <svg viewBox="0 0 24 24">
+                        <rect x="3" y="3" width="7" height="7" rx="1"/>
+                        <rect x="14" y="3" width="7" height="7" rx="1"/>
+                        <rect x="14" y="14" width="7" height="7" rx="1"/>
+                        <rect x="3" y="14" width="7" height="7" rx="1"/>
+                    </svg>
+                    <span class="sidebar-label">Dashboard</span>
+                </a>
+                <a href="cart.html" class="sidebar-icon" aria-label="Cart">
+                    <svg viewBox="0 0 24 24">
+                        <circle cx="9" cy="21" r="1" />
+                        <circle cx="20" cy="21" r="1" />
+                        <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6" />
+                    </svg>
+                    <span class="sidebar-label">Cart</span>
+                </a>
+                <a href="marketplace.html" class="sidebar-icon" aria-label="Marketplace">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M6 2l1 7h10l1-7"/>
+                        <rect x="2" y="9" width="20" height="7" rx="2"/>
+                    </svg>
+                    <span class="sidebar-label">Marketplace</span>
+                </a>
+                <a href="messages.html" class="sidebar-icon" aria-label="Messages" style="position: relative;">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h12a2 2 0 012 2z"/>
+                    </svg>
+                    <span class="sidebar-label">Messages</span>
+                    <div class="notification-badge" aria-label="New notifications">3</div>
+                </a>
+                <a href="#" class="sidebar-icon" aria-label="Wallet" style="background: rgba(255, 255, 255, 0.15);">
+                    <svg viewBox="0 0 24 24">
+                        <rect x="2" y="7" width="20" height="7" rx="2"/>
+                        <path d="M16 3h6v4"/>
+                    </svg>
+                    <span class="sidebar-label">Wallet</span>
+                </a>
+                <a href="leaderboard.html" class="sidebar-icon" aria-label="Leaderboard">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M17 3H7v4H17z"/>
+                        <path d="M5 8v3a6 6 0 0010 3"/>
+                        <path d="M19 8v3a6 6 0 01-10 3"/>
+                        <path d="M12 17v4"/>
+                        <path d="M7 21h10"/>
+                    </svg>
+                    <span class="sidebar-label">Leaderboard</span>
+                </a>
+                <a href="profile.html" class="sidebar-icon" aria-label="My Profile">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    <span class="sidebar-label">My Profile</span>
+                </a>
+            </div>
+        </nav>
+
+        <!-- Main Wallet Content -->
+        <div class="wallet-container">
+            <!-- Dark Mode Toggle -->
+            <button class="darkmode-fab" id="darkModeToggle" aria-label="Toggle Dark Mode">
+                🌙
+            </button>
+
+            <h1 class="wallet-title">My Wallet</h1>
+            
+            <!-- Statistics Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Wallet Balance</h3>
+                    <p class="amount" id="walletBalance">₹ 1,200</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Earned</h3>
+                    <p class="amount" id="totalEarned">₹ 3,500</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Spent</h3>
+                    <p class="amount" id="totalSpent">₹ 2,300</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Transactions</h3>
+                    <p class="amount" id="transactionCount">28</p>
+                </div>
+            </div>
+
+            <!-- Action Sections -->
+            <div class="actions-section">
+                <div class="action-card">
+                    <h3>Sell</h3>
+                    <button class="action-btn sell-btn" onclick="addNewSell()">+ Add New Sell</button>
+                    <div class="service-item">
+                        <span>Logo Design</span>
+                        <span>₹ 500</span>
+                    </div>
+                    <div class="service-item">
+                        <span>Coding Help</span>
+                        <span>₹ 700</span>
+                    </div>
+                </div>
+
+                <div class="action-card">
+                    <h3>Purchase</h3>
+                    <button class="action-btn purchase-btn" onclick="browseToPurchase()">Browse to Purchase</button>
+                    <div class="service-item">
+                        <span>Notes PDF</span>
+                        <span>₹ 150</span>
+                    </div>
+                    <div class="service-item">
+                        <span>Music Editing</span>
+                        <span>₹ 300</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transactions Table -->
+            <div class="transactions-section">
+                <h3>Recent Transactions</h3>
+                <div style="overflow-x: auto;">
+                    <table class="transactions-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Item/Skill</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactionsTableBody">
+                            <tr>
+                                <td>22 Aug</td>
+                                <td>Logo Design</td>
+                                <td>Sell</td>
+                                <td class="transaction-positive">+ ₹ 500</td>
+                                <td class="status-completed">Completed</td>
+                            </tr>
+                            <tr>
+                                <td>21 Aug</td>
+                                <td>Notes PDF</td>
+                                <td>Purchase</td>
+                                <td class="transaction-negative">- ₹ 150</td>
+                                <td class="status-completed">Completed</td>
+                            </tr>
+                            <tr>
+                                <td>19 Aug</td>
+                                <td>Coding Help</td>
+                                <td>Sell</td>
+                                <td class="transaction-positive">+ ₹ 700</td>
+                                <td class="status-pending">Pending</td>
+                            </tr>
+                            <tr>
+                                <td>18 Aug</td>
+                                <td>Music Editing</td>
+                                <td>Purchase</td>
+                                <td class="transaction-negative">- ₹ 300</td>
+                                <td class="status-completed">Completed</td>
+                            </tr>
+                            <tr>
+                                <td>15 Aug</td>
+                                <td>Web Design</td>
+                                <td>Sell</td>
+                                <td class="transaction-positive">+ ₹ 1,200</td>
+                                <td class="status-completed">Completed</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="wallet-actions">
+                <button class="wallet-action-btn" onclick="withdrawMoney()">Withdraw Money</button>
+                <button class="wallet-action-btn" onclick="addMoney()">Add Money</button>
+                <button class="wallet-action-btn" onclick="downloadReport()">Download Report</button>
+            </div>
+
+            <!-- Back to Home Button -->
+            <div class="back-section">
+                <button class="back-btn" onclick="backToHome()">
+                    ← Back to Home
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Wallet functionality
+        let isDarkMode = false;
+        let walletData = {
+            balance: 1200,
+            totalEarned: 3500,
+            totalSpent: 2300,
+            transactions: []
+        };
+
+        // Initialize wallet and sidebar
+        window.addEventListener('DOMContentLoaded', function() {
+            loadWalletData();
+            loadTheme();
+            bindEvents();
+            updateStats();
+            initializeSidebar();
+        });
+
+        // Sidebar functionality
+        function initializeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const hamburger = document.getElementById('hamburger');
+            
+            hamburger.addEventListener('click', function(e) {
+                e.preventDefault();
+                sidebar.classList.toggle('expanded');
+            });
+
+            // Auto-collapse on mobile
+            if (window.innerWidth <= 768) {
+                document.addEventListener('click', function(e) {
+                    const isExpanded = sidebar.classList.contains('expanded');
+                    if (!sidebar.contains(e.target) && isExpanded) {
+                        sidebar.classList.remove('expanded');
+                    }
+                });
+            }
+        }
+
+        // Load wallet data from localStorage
+        function loadWalletData() {
+            const savedWalletData = JSON.parse(localStorage.getItem('walletData') || '{}');
+            walletData = { ...walletData, ...savedWalletData };
+        }
+
+        // Save wallet data to localStorage
+        function saveWalletData() {
+            localStorage.setItem('walletData', JSON.stringify(walletData));
+        }
+
+        // Theme management
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('darkMode');
+            if (savedTheme !== null) {
+                isDarkMode = JSON.parse(savedTheme);
+            }
+            applyTheme();
+        }
+
+        function toggleDarkMode() {
+            isDarkMode = !isDarkMode;
+            applyTheme();
+            localStorage.setItem('darkMode', JSON.stringify(isDarkMode));
+        }
+
+        function applyTheme() {
+            const body = document.body;
+            const toggleBtn = document.getElementById('darkModeToggle');
+            
+            if (isDarkMode) {
+                body.classList.add('dark');
+                toggleBtn.textContent = '☀️';
+            } else {
+                body.classList.remove('dark');
+                toggleBtn.textContent = '🌙';
+            }
+        }
+
+        // Bind events
+        function bindEvents() {
+            document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
+        }
+
+        // Update statistics display
+        function updateStats() {
+            document.getElementById('walletBalance').textContent = `₹ ${walletData.balance.toLocaleString()}`;
+            document.getElementById('totalEarned').textContent = `₹ ${walletData.totalEarned.toLocaleString()}`;
+            document.getElementById('totalSpent').textContent = `₹ ${walletData.totalSpent.toLocaleString()}`;
+            
+            // Count transactions from table
+            const transactionRows = document.querySelectorAll('#transactionsTableBody tr');
+            document.getElementById('transactionCount').textContent = transactionRows.length;
+        }
+
+        // Action functions
+        function addNewSell() {
+            console.log('Adding new sell item');
+            showMessage('Add New Sell functionality would open here', 'info');
+            // Navigate to marketplace or open modal
+            setTimeout(() => {
+                window.location.href = 'marketplace.html';
+            }, 1500);
+        }
+
+        function browseToPurchase() {
+            console.log('Browse to purchase');
+            showMessage('Redirecting to marketplace...', 'info');
+            setTimeout(() => {
+                window.location.href = 'marketplace.html';
+            }, 1500);
+        }
+
+        function withdrawMoney() {
+            console.log('Withdraw money clicked');
+            
+            const amount = prompt('Enter amount to withdraw (₹):');
+            if (amount && !isNaN(amount) && parseFloat(amount) > 0) {
+                const withdrawAmount = parseFloat(amount);
+                if (withdrawAmount <= walletData.balance) {
+                    walletData.balance -= withdrawAmount;
+                    walletData.totalSpent += withdrawAmount;
+                    
+                    // Add transaction to table
+                    addTransaction(new Date().toLocaleDateString('en-GB', { 
+                        day: 'numeric', 
+                        month: 'short' 
+                    }), 'Money Withdrawal', 'Withdraw', -withdrawAmount, 'Completed');
+                    
+                    updateStats();
+                    saveWalletData();
+                    showMessage(`Successfully withdrew ₹${withdrawAmount}`, 'success');
+                } else {
+                    showMessage('Insufficient balance!', 'error');
+                }
+            }
+        }
+
+        function addMoney() {
+            console.log('Add money clicked');
+            
+            const amount = prompt('Enter amount to add (₹):');
+            if (amount && !isNaN(amount) && parseFloat(amount) > 0) {
+                const addAmount = parseFloat(amount);
+                walletData.balance += addAmount;
+                walletData.totalEarned += addAmount;
+                
+                // Add transaction to table
+                addTransaction(new Date().toLocaleDateString('en-GB', { 
+                    day: 'numeric', 
+                    month: 'short' 
+                }), 'Money Added', 'Deposit', addAmount, 'Completed');
+                
+                updateStats();
+                saveWalletData();
+                showMessage(`Successfully added ₹${addAmount}`, 'success');
+            }
+        }
+
+        function downloadReport() {
+            console.log('Download report clicked');
+            
+            // Create CSV content
+            let csvContent = "Date,Item/Skill,Type,Amount,Status\n";
+            const rows = document.querySelectorAll('#transactionsTableBody tr');
+            
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                const rowData = Array.from(cells).map(cell => {
+                    return `"${cell.textContent.trim()}"`;
+                }).join(',');
+                csvContent += rowData + '\n';
+            });
+            
+            // Create and download file
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `UniKart_Wallet_Report_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+            
+            showMessage('Report downloaded successfully!', 'success');
+        }
+
+        function backToHome() {
+            console.log('Back to home clicked');
+            window.location.href = 'home.html';
+        }
+
+        // Add transaction to table
+        function addTransaction(date, item, type, amount, status) {
+            const tbody = document.getElementById('transactionsTableBody');
+            const row = document.createElement('tr');
+            
+            const amountClass = amount > 0 ? 'transaction-positive' : 'transaction-negative';
+            const amountText = amount > 0 ? `+ ₹ ${amount}` : `- ₹ ${Math.abs(amount)}`;
+            const statusClass = status === 'Completed' ? 'status-completed' : 'status-pending';
+            
+            row.innerHTML = `
+                <td>${date}</td>
+                <td>${item}</td>
+                <td>${type}</td>
+                <td class="${amountClass}">${amountText}</td>
+                <td class="${statusClass}">${status}</td>
+            `;
+            
+            // Insert at the beginning (most recent first)
+            tbody.insertBefore(row, tbody.firstChild);
+        }
+
+        // Show messages to user
+        function showMessage(message, type = 'info') {
+            // Remove existing messages
+            const existingMessages = document.querySelectorAll('.success-message, .error-message, .info-message');
+            existingMessages.forEach(msg => msg.remove());
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.textContent = message;
+            
+            if (type === 'success') {
+                messageDiv.className = 'success-message';
+            } else if (type === 'error') {
+                messageDiv.style.cssText = `
+                    background: #f8d7da;
+                    color: #721c24;
+                    padding: 1rem;
+                    border-radius: 8px;
+                    margin-bottom: 1rem;
+                    border: 1px solid #f5c6cb;
+                `;
+                if (document.body.classList.contains('dark')) {
+                    messageDiv.style.cssText += `
+                        background: #4d1e23 !important;
+                        color: #f87f7f !important;
+                        border-color: #5a2831 !important;
+                    `;
+                }
+            } else {
+                messageDiv.style.cssText = `
+                    background: #d1ecf1;
+                    color: #0c5460;
+                    padding: 1rem;
+                    border-radius: 8px;
+                    margin-bottom: 1rem;
+                    border: 1px solid #bee5eb;
+                `;
+                if (document.body.classList.contains('dark')) {
+                    messageDiv.style.cssText += `
+                        background: #1e4d5a !important;
+                        color: #7dd8f1 !important;
+                        border-color: #2d5a65 !important;
+                    `;
+                }
+            }
+            
+            // Insert at the top of the container
+            const container = document.querySelector('.wallet-container');
+            container.insertBefore(messageDiv, container.children[1]);
+            
+            // Remove message after 3 seconds
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 3000);
+        }
+
+        // Add some demo functionality for better UX
+        function simulateLoading(button, text, callback) {
+            const originalText = button.textContent;
+            button.textContent = text;
+            button.classList.add('loading');
+            
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.classList.remove('loading');
+                if (callback) callback();
+            }, 1000);
+        }
+
+        console.log('Wallet page loaded successfully!');
+    </script>
+</body>
+</html>

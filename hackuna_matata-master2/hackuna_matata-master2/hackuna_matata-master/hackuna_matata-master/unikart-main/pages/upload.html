@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>UniKart - Upload Product/Skill</title>
+<!-- Apply dark mode immediately -->
+<script>
+(function() {
+  const darkMode = localStorage.getItem('darkMode') === 'true';
+  if (darkMode) {
+    document.documentElement.classList.add('dark');
+    document.body.classList.add('dark');
+  }
+})();
+</script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body, html {
+    height: 100%; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f9fafb; color: #222; transition: background 0.3s, color 0.3s;
+    overflow-x: hidden;
+  }
+  body.dark {
+    background: #191c1c !important; color: #f5f5f5 !important;
+  }
+  
+  .container {
+    min-height: 100vh;
+    display: flex;
+    background: #f9fafb;
+    transition: background 0.3s;
+  }
+  body.dark .container {
+    background: #191c1c !important;
+  }
+  
+  /* Organized Sidebar matching your style */
+  .sidebar {
+    position: fixed; top: 0; left: 0; height: 100vh;
+    width: 80px; background: #e31c1c;
+    padding: 24px 0;
+    box-shadow: 2px 0 10px rgba(227, 28, 28, 0.1);
+    display: flex; flex-direction: column;
+    transition: width 0.3s ease, background-color 0.3s ease;
+    user-select: none;
+    z-index: 1000;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  .sidebar.expanded { width: 240px; }
+  body.dark .sidebar {
+    background: #222 !important; color: #ddd;
+  }
+  
+  .sidebar-menu {
+    display: flex; flex-direction: column; gap: 22px; padding: 0 16px; 
+    flex-grow: 1; overflow-y: auto; overflow-x: hidden;
+  }
+  
+  .sidebar-icon {
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    color: #fff; font-weight: 600; font-size: 20px;
+    padding: 16px; margin: 4px 0; border-radius: 12px;
+    user-select: none; text-decoration: none;
+    transition: background 0.3s, color 0.3s, transform 0.2s;
+    position: relative; white-space: nowrap; overflow: visible;
+    min-height: 48px;
+  }
+  .sidebar-icon:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: scale(1.05);
+  }
+  body.dark .sidebar-icon {
+    color: #ff6a6a;
+  }
+  body.dark .sidebar-icon:hover {
+    background: rgba(255, 106, 106, 0.15);
+  }
+  
+  .sidebar-label {
+    margin-left: 20px; opacity: 0; white-space: nowrap;
+    transition: opacity 0.3s; overflow: hidden; text-overflow: ellipsis;
+    font-size: 16px;
+  }
+  .sidebar.expanded .sidebar-label { opacity: 1; }
+  
+  .sidebar-icon svg {
+    width: 28px; height: 28px; stroke: currentColor; flex-shrink: 0;
+    display: block; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  }
+
+  .notification-badge {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: #d61818;
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    min-width: 18px;
+    height: 18px;
+    line-height: 18px;
+    border-radius: 12px;
+    text-align: center;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  /* Main Section */
+  .main-section {
+    margin-left: 80px; flex: 1; display: flex; justify-content: center; align-items: flex-start;
+    padding: 20px; background: #f9fafb; transition: margin-left 0.3s, background 0.3s, color 0.3s;
+  }
+  .sidebar.expanded ~ .main-section { margin-left: 240px; }
+  body.dark .main-section {
+    background: #191c1c !important; color: #f5f5f5 !important;
+  }
+
+  .upload-panel {
+    margin: 32px 20px 40px 20px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    max-width: 500px;
+  }
+  
+  .toggle-bar {
+    background: #fff;
+    padding: 12px 32px;
+    border-radius: 25px;
+    box-shadow: 0 6px 35px rgba(227, 28, 28, 0.15);
+    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 24px;
+    font-weight: 700; font-size: 1.1rem; letter-spacing: 0.1px;
+    transition: background 0.3s, color 0.3s;
+  }
+  body.dark .toggle-bar {
+    background: #232323 !important; color: #f5f5f5 !important;
+  }
+  
+  .toggle-switch {
+    width: 52px; height: 30px; background: #ffeaea;
+    border-radius: 18px; position: relative; cursor: pointer;
+    transition: background 0.3s; display: inline-block;
+  }
+  .toggle-switch input[type='checkbox'] { display: none; }
+  .toggle-slider {
+    position: absolute; top: 3px; left: 3px;
+    width: 24px; height: 24px; background: #e31c1c;
+    border-radius: 50%; transition: left 0.25s ease;
+    box-shadow: 0 2px 8px rgba(227, 28, 28, 0.3);
+  }
+  .toggle-switch input[type='checkbox']:checked + .toggle-slider { 
+    left: 25px; background: #4fa7f3;
+    box-shadow: 0 2px 8px rgba(79, 167, 243, 0.3);
+  }
+  
+  .upload-card {
+    background: #fff;
+    border-radius: 24px;
+    box-shadow: 0 10px 45px rgba(227, 28, 28, 0.2);
+    padding: 36px;
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    border: 2px solid rgba(250, 210, 210, 0.5);
+    min-width: 350px;
+    transition: background 0.3s, color 0.3s;
+  }
+  body.dark .upload-card {
+    background: #232323 !important;
+    border-color: rgba(227, 28, 28, 0.3);
+    color: #fff !important;
+  }
+  
+  .card-title {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #e31c1c;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+    transition: color 0.3s;
+  }
+  body.dark .card-title { color: #ff6d6d !important; }
+  
+  .card-desc {
+    color: #4a525a; font-size: 1rem; margin-bottom: 12px; font-weight: 500;
+    line-height: 1.5;
+    transition: color 0.3s;
+  }
+  body.dark .card-desc { color: #eee !important; }
+  
+  .card-fields { display: flex; flex-direction: column; gap: 16px; }
+  .input-row { display: flex; gap: 14px; }
+  
+  .field, .select, .textarea {
+    background: #f8f9fa;
+    color: #222;
+    border: 2px solid #e9ecef;
+    border-radius: 14px;
+    font-size: 0.9rem;
+    padding: 12px 14px;
+    font-weight: 500;
+    outline: none;
+    transition: all 0.3s ease;
+    font-family: inherit;
+    width: 100%;
+    box-sizing: border-box;
+    flex: 1;
+    min-width: 0;
+  }
+  .field:focus, .select:focus, .textarea:focus {
+    border-color: #e31c1c;
+    box-shadow: 0 0 0 3px rgba(227, 28, 28, 0.1);
+  }
+  body.dark .field, body.dark .select, body.dark .textarea {
+    background: #2a2a2a !important; 
+    color: #fff !important; 
+    border-color: #444;
+  }
+  body.dark .field:focus, body.dark .select:focus, body.dark .textarea:focus {
+    border-color: #ff6d6d;
+    box-shadow: 0 0 0 3px rgba(255, 109, 109, 0.1);
+  }
+  
+  .field::placeholder, .textarea::placeholder { 
+    color: #8a8a8a;
+    font-size: 0.85rem;
+  }
+  body.dark .field::placeholder, body.dark .textarea::placeholder { 
+    color: #ccc; 
+  }
+  
+  .select { appearance: none; cursor: pointer; }
+  .textarea { resize: vertical; min-height: 80px; }
+  
+  .toggle-row {
+    display: flex; gap: 12px; align-items: center; font-size: 1rem; 
+    margin-bottom: 4px; font-weight: 600; color: #e31c1c;
+    transition: color 0.3s;
+  }
+  body.dark .toggle-row { color: #ff6d6d !important; }
+  
+  .toggle-row input[type="checkbox"] {
+    width: 20px; height: 20px; cursor: pointer;
+  }
+  
+  .card-action-btn {
+    background: linear-gradient(135deg, #e31c1c 0%, #fa6868 100%);
+    color: #fff; border: none; font-size: 1.1rem; font-weight: 700;
+    border-radius: 16px; padding: 16px 0; width: 100%; margin-top: 16px; cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px rgba(250, 104, 104, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .card-action-btn:hover { 
+    background: linear-gradient(135deg, #c61616 0%, #e55555 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(250, 104, 104, 0.5);
+  }
+  
+  .info-row { 
+    font-size: 14px; 
+    color: rgba(227, 28, 28, 0.7); 
+    font-style: italic;
+  }
+  body.dark .info-row { color: rgba(255, 109, 109, 0.7); }
+  
+  .upload-btn {
+    background: #e31c1c;
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 12px;
+    border: none;
+    font-size: 1rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(250, 104, 104, 0.3);
+    align-self: flex-start;
+  }
+  .upload-btn:hover { 
+    background: #c61616;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(250, 104, 104, 0.4);
+  }
+  body.dark .upload-btn { background: #ff6d6d; color: #232323; }
+  .upload-btn input[type=file] { display: none; }
+  
+  /* Image previews */
+  .preview-images {
+    display: flex; gap: 10px; flex-wrap: wrap; min-height: 40px;
+    margin-top: 8px;
+  }
+  .preview-images img {
+    width: 60px; height: 60px; object-fit: cover; border-radius: 12px; 
+    border: 2px solid #e31c1c;
+    transition: transform 0.2s;
+  }
+  .preview-images img:hover {
+    transform: scale(1.05);
+  }
+  
+  /* Dark mode toggle */
+  .darkmode-fab {
+    position: fixed; bottom: 32px; right: 32px;
+    width: 48px; height: 48px;
+    border-radius: 50%; background: #e31c1c; color: #fff;
+    font-size: 24px; border: none; cursor: pointer;
+    box-shadow: 0 0 15px rgba(227, 28, 28, 0.6);
+    user-select: none; z-index: 9999;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.3s ease;
+  }
+  .darkmode-fab:hover { 
+    background: #c61616; 
+    transform: scale(1.1);
+  }
+  body.dark .darkmode-fab { 
+    background: #eee; color: #191c1c;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+  }
+  
+  /* Success message */
+  .success-message {
+    background: #d4edda;
+    color: #155724;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    border: 1px solid #c3e6cb;
+    display: none;
+    animation: slideIn 0.3s ease;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  body.dark .success-message {
+    background: #1e4d23;
+    color: #7dd87f;
+    border-color: #2d5a31;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .main-section { margin-left: 0; padding-top: 80px; }
+    .sidebar {
+      width: 100vw; height: 70px; flex-direction: row; padding: 12px 20px;
+    }
+    .sidebar-menu { flex-direction: row; gap: 16px; justify-content: space-around; padding: 0; }
+    .sidebar-icon { padding: 12px; min-width: 48px; min-height: 48px; }
+    
+    .upload-panel { max-width: 95vw; margin: 20px 10px; }
+    .upload-card { min-width: unset; max-width: 100%; padding: 24px; }
+    .input-row { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+<button class="darkmode-fab" id="darkModeToggle" aria-label="Toggle dark mode">🌙</button>
+
+<div class="container">
+  <!-- Properly Organized Sidebar -->
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-menu">
+      <a href="#" class="sidebar-icon" id="menuButton" aria-label="Toggle Sidebar">
+        <svg viewBox="0 0 24 24">
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+        <span class="sidebar-label">Menu</span>
+      </a>
+      <a href="home.html" class="sidebar-icon" aria-label="Dashboard">
+        <svg viewBox="0 0 24 24">
+          <rect x="3" y="3" width="7" height="7" rx="1"/>
+          <rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="14" y="14" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/>
+        </svg>
+        <span class="sidebar-label">Dashboard</span>
+      </a>
+      <a href="#" class="sidebar-icon" aria-label="Cart">
+        <svg viewBox="0 0 24 24">
+          <circle cx="9" cy="21" r="1" />
+          <circle cx="20" cy="21" r="1" />
+          <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6" />
+        </svg>
+        <span class="sidebar-label">Cart</span>
+      </a>
+      <a href="marketplace.html" class="sidebar-icon" aria-label="Marketplace">
+        <svg viewBox="0 0 24 24">
+          <path d="M6 2l1 7h10l1-7"/>
+          <rect x="2" y="9" width="20" height="7" rx="2"/>
+        </svg>
+        <span class="sidebar-label">Marketplace</span>
+      </a>
+      <a href="#" class="sidebar-icon" aria-label="Messages" style="position: relative;">
+        <svg viewBox="0 0 24 24">
+          <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h12a2 2 0 012 2z"/>
+        </svg>
+        <span class="sidebar-label">Messages</span>
+        <div class="notification-badge" aria-label="New notifications">3</div>
+      </a>
+      <a href="wallet.html" class="sidebar-icon" aria-label="Wallet">
+        <svg viewBox="0 0 24 24">
+          <rect x="2" y="7" width="20" height="7" rx="2"/>
+          <path d="M16 3h6v4"/>
+        </svg>
+        <span class="sidebar-label">Wallet</span>
+      </a>
+      <a href="#" class="sidebar-icon" aria-label="Leaderboard">
+        <svg viewBox="0 0 24 24">
+          <path d="M17 3H7v4H17z"/>
+          <path d="M5 8v3a6 6 0 0010 3"/>
+          <path d="M19 8v3a6 6 0 01-10 3"/>
+          <path d="M12 17v4"/>
+          <path d="M7 21h10"/>
+        </svg>
+        <span class="sidebar-label">Leaderboard</span>
+      </a>
+      <!-- UPDATED: My Profile instead of Settings -->
+      <a href="#" class="sidebar-icon" aria-label="My Profile" onclick="openMyProfile(); return false;">
+        <svg viewBox="0 0 24 24">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+        <span class="sidebar-label">My Profile</span>
+      </a>
+    </div>
+  </nav>
+  
+  <main class="main-section">
+    <div class="upload-panel">
+      
+      <div class="success-message" id="successMessage">
+        Successfully uploaded! Your listing will appear in the marketplace.
+      </div>
+      
+      <div class="toggle-bar">
+        <span>Sell Product</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="formToggle" />
+          <span class="toggle-slider"></span>
+        </label>
+        <span>Sell Skill</span>
+      </div>
+      
+      <!-- Product Form -->
+      <form class="upload-card" id="productForm" autocomplete="off">
+        <div class="card-title">Product Marketplace</div>
+        <div class="card-desc">Share books, gadgets, clothing, and more. Connect with campus buyers.</div>
+        <div class="card-fields">
+          <input class="field" type="text" placeholder="Product Name" required name="productName">
+          <textarea class="textarea" placeholder="Product Description" required name="productDescription"></textarea>
+          <div class="input-row">
+            <select class="select" required name="productCategory">
+              <option value="">Category</option>
+              <option>Books</option>
+              <option>Electronics</option>
+              <option>Clothing</option>
+              <option>Stationery</option>
+              <option>Sports</option>
+              <option>Other</option>
+            </select>
+            <select class="select" required name="productCondition">
+              <option value="">Condition</option>
+              <option>New</option>
+              <option>Like New</option>
+              <option>Used</option>
+            </select>
+          </div>
+          <div class="input-row">
+            <input class="field" type="number" min="0" placeholder="Price ₹" required name="productPrice">
+            <input class="field" type="number" min="1" placeholder="Qty" required name="productQuantity">
+          </div>
+          <div class="toggle-row">
+            <input type="checkbox" id="productNegotiable" name="productNegotiable" />
+            <label for="productNegotiable">Negotiable?</label>
+          </div>
+          <input class="field" type="text" placeholder="Location / Pickup Info" required name="productLocation">
+          <input class="field" type="email" placeholder="Contact Email" required name="productContact">
+          <label class="upload-btn">
+            📷 Upload Images
+            <input type="file" id="imageUpload" multiple accept="image/*">
+          </label>
+          <div class="preview-images" id="imagePreview"></div>
+          <div class="info-row">Listing date will be auto-filled</div>
+          <button type="submit" class="card-action-btn">List Product</button>
+        </div>
+      </form>
+      
+      <!-- Skill Form -->
+      <form class="upload-card" id="skillForm" autocomplete="off" style="display:none">
+        <div class="card-title">Skills Marketplace</div>
+        <div class="card-desc">List services like tutoring, design, coding, photography, etc.</div>
+        <div class="card-fields">
+          <input class="field" type="text" placeholder="Skill/Service Title" required name="skillTitle">
+          <textarea class="textarea" placeholder="Service Description" required name="skillDescription"></textarea>
+          <div class="input-row">
+            <select class="select" required name="skillCategory">
+              <option value="">Category</option>
+              <option>Education</option>
+              <option>Design</option>
+              <option>Coding</option>
+              <option>Art</option>
+              <option>Fitness</option>
+              <option>Music</option>
+              <option>Other</option>
+            </select>
+            <select class="select" required name="skillLevel">
+              <option value="">Experience Level</option>
+              <option>Beginner</option>
+              <option>Intermediate</option>
+              <option>Expert</option>
+            </select>
+          </div>
+          <input class="field" type="number" min="0" placeholder="Rate (₹ per hour / project)" required name="skillRate">
+          <div class="toggle-row">
+            <input type="checkbox" id="skillNegotiable" name="skillNegotiable" />
+            <label for="skillNegotiable">Rate negotiable?</label>
+          </div>
+          <label class="upload-btn">
+            🎨 Upload Portfolio
+            <input type="file" id="portfolioUpload" multiple accept="image/*">
+          </label>
+          <div class="preview-images" id="portfolioPreview"></div>
+          <input class="field" type="text" placeholder="Availability (timings/days)" required name="skillAvailability">
+          <select class="select" required name="skillMode">
+            <option value="">Mode</option>
+            <option>Online</option>
+            <option>Offline</option>
+            <option>Both</option>
+          </select>
+          <input class="field" type="text" placeholder="Location (if offline)" name="skillLocation">
+          <input class="field" type="email" placeholder="Contact Email" required name="skillContact">
+          <div class="info-row">Listing date will be auto-filled</div>
+          <button type="submit" class="card-action-btn">List Skill/Service</button>
+        </div>
+      </form>
+    </div>
+  </main>
+</div>
+
+<script>
+  // Dark mode persistence
+  function initializeDarkMode() {
+    const darkMode = localStorage.getItem('darkMode') === 'true';
+    const toggleBtn = document.getElementById('darkModeToggle');
+    
+    if (darkMode) {
+      document.body.classList.add('dark');
+      toggleBtn.textContent = '☀';
+    } else {
+      document.body.classList.remove('dark');
+      toggleBtn.textContent = '🌙';
+    }
+  }
+
+  function toggleDarkMode() {
+    const body = document.body;
+    const toggleBtn = document.getElementById('darkModeToggle');
+    
+    body.classList.toggle('dark');
+    const isDark = body.classList.contains('dark');
+    
+    localStorage.setItem('darkMode', isDark);
+    toggleBtn.textContent = isDark ? '☀' : '🌙';
+  }
+
+  // My Profile function
+  function openMyProfile() {
+    console.log('👤 Opening My Profile from Upload page...');
+    
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    const userProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+    
+    const profileInfo = `🔹 My Profile Details:
+
+👤 Name: ${currentUser.name || 'User'}
+📧 Email: ${currentUser.email || 'Not provided'}
+🎓 Course: ${userProfile.course || 'Not specified'}
+💼 Skills: ${userProfile.skills ? userProfile.skills.join(', ') : 'Not specified'}
+🎯 Interests: ${userProfile.interests ? userProfile.interests.join(', ') : 'Not specified'}
+📝 Bio: ${userProfile.bio || 'No bio provided'}
+
+💡 Tip: You can create a dedicated profile editing page!`;
+    
+    alert(profileInfo);
+  }
+
+  // Sidebar functionality
+  const sidebar = document.getElementById('sidebar');
+  const menuButton = document.getElementById('menuButton');
+  menuButton.addEventListener('click', e => {
+    e.preventDefault();
+    sidebar.classList.toggle('expanded');
+  });
+
+  // Form toggle functionality
+  const formToggle = document.getElementById('formToggle');
+  const productForm = document.getElementById('productForm');
+  const skillForm = document.getElementById('skillForm');
+  
+  formToggle.addEventListener('change', () => {
+    if (formToggle.checked) {
+      productForm.style.display = 'none';
+      skillForm.style.display = 'block';
+    } else {
+      skillForm.style.display = 'none';
+      productForm.style.display = 'block';
+    }
+  });
+
+  // Image upload previews
+  function setupImagePreview(inputId, previewId) {
+    document.getElementById(inputId).addEventListener('change', function() {
+      const preview = document.getElementById(previewId);
+      preview.innerHTML = '';
+      
+      Array.from(this.files).forEach(file => {
+        if (file.type.startsWith("image/")) {
+          const reader = new FileReader();
+          reader.onload = e => {
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.title = file.name;
+            preview.appendChild(img);
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    });
+  }
+
+  setupImagePreview('imageUpload', 'imagePreview');
+  setupImagePreview('portfolioUpload', 'portfolioPreview');
+
+  // Form submissions
+  function showSuccess() {
+    const successMsg = document.getElementById('successMessage');
+    successMsg.style.display = 'block';
+    setTimeout(() => {
+      successMsg.style.display = 'none';
+    }, 4000);
+  }
+
+  function handleFormSubmit(form, type) {
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      
+      // Collect form data
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
+      
+      // Add timestamp
+      data.timestamp = new Date().toISOString();
+      data.type = type;
+      
+      // Store in localStorage (in real app, send to backend)
+      const listings = JSON.parse(localStorage.getItem('userListings') || '[]');
+      listings.push(data);
+      localStorage.setItem('userListings', JSON.stringify(listings));
+      
+      // Show success and reset
+      showSuccess();
+      form.reset();
+      document.getElementById('imagePreview').innerHTML = '';
+      document.getElementById('portfolioPreview').innerHTML = '';
+      
+      console.log(`${type} listing created:`, data);
+    });
+  }
+
+  handleFormSubmit(productForm, 'product');
+  handleFormSubmit(skillForm, 'skill');
+
+  // Dark mode toggle
+  document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
+
+  // Initialize on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    initializeDarkMode();
+    console.log('✅ Upload page loaded successfully!');
+  });
+</script>
+</body>
+</html>

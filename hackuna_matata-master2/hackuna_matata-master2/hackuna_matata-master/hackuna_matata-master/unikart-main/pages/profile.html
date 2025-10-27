@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniKart - My Profile</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <!-- Apply dark mode immediately -->
+    <script>
+        (function () {
+            const darkMode = localStorage.getItem('darkMode') === 'true';
+            if (darkMode) {
+                document.documentElement.classList.add('dark');
+                document.body.classList.add('dark');
+            }
+        })();
+    </script>
+    <style>
+        :root {
+            --primary-red: #e31c1c;
+            --primary-red-hover: #b01212;
+            --gradient-red: linear-gradient(135deg, #e31c1c 0%, #fa6868 100%);
+            --text-primary: #222;
+            --text-secondary: #666;
+            --bg-light: #f7faf7;
+            --bg-card: #ffffff;
+            --shadow-light: rgba(0, 0, 0, 0.1);
+            --shadow-hover: rgba(0, 0, 0, 0.15);
+            --border-radius: 16px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="dark"] {
+            --text-primary: #f5f5f5;
+            --text-secondary: #ccc;
+            --bg-light: linear-gradient(135deg, #191c1c 0%, #0f1419 100%);
+            --bg-card: #242424;
+            --shadow-light: rgba(0, 0, 0, 0.3);
+            --shadow-hover: rgba(0, 0, 0, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+            width: 100%;
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg-light);
+            color: var(--text-primary);
+            transition: var(--transition);
+            scroll-behavior: smooth;
+        }
+
+        body.dark {
+            background: var(--bg-light) !important;
+            color: var(--text-primary) !important;
+        }
+
+        .container {
+            min-height: 100vh;
+            display: flex;
+            background: transparent;
+        }
+
+        /* Enhanced Sidebar */
+        nav.sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 80px;
+            background: var(--primary-red);
+            padding: 24px 0;
+            box-shadow: 0 0 30px rgba(227, 28, 28, 0.15);
+            display: flex;
+            flex-direction: column;
+            transition: var(--transition);
+            user-select: none;
+            z-index: 1000;
+            overflow: hidden;
+        }
+
+        nav.sidebar.expanded {
+            width: 260px;
+        }
+
+        body.dark nav.sidebar {
+            background: #222 !important;
+            box-shadow: 0 0 30px rgba(255, 106, 106, 0.2);
+        }
+
+        .sidebar-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 0 16px;
+            flex-grow: 1;
+        }
+
+        .sidebar-icon {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            color: #fff;
+            font-weight: 600;
+            font-size: 16px;
+            padding: 14px 16px;
+            margin: 4px 0;
+            border-radius: 12px;
+            text-decoration: none;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sidebar-icon::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            transition: var(--transition);
+        }
+
+        .sidebar-icon:hover::before {
+            left: 0;
+        }
+
+        .sidebar-icon:hover {
+            transform: translateX(4px);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        body.dark .sidebar-icon {
+            color: #ff6a6a;
+        }
+
+        body.dark .sidebar-icon:hover {
+            background: rgba(255, 106, 106, 0.15);
+        }
+
+        .sidebar-label {
+            margin-left: 16px;
+            opacity: 0;
+            transform: translateX(-10px);
+            transition: var(--transition);
+            font-weight: 500;
+        }
+
+        nav.sidebar.expanded .sidebar-label {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .sidebar-icon svg {
+            width: 24px;
+            height: 24px;
+            stroke: currentColor;
+            flex-shrink: 0;
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #ff4757;
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            min-width: 18px;
+            height: 18px;
+            line-height: 18px;
+            border-radius: 9px;
+            text-align: center;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* Enhanced Main Content */
+        main.profile-main {
+            margin-left: 80px;
+            flex-grow: 1;
+            min-height: 100vh;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        nav.sidebar.expanded~main.profile-main {
+            margin-left: 260px;
+        }
+
+        /* Premium Header Section */
+        .profile-header {
+            background: var(--gradient-red);
+            padding: 60px 0 140px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body.dark .profile-header {
+            background: linear-gradient(135deg, #333 0%, #555 100%) !important;
+        }
+
+        .profile-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 70% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 40px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Premium Profile Card */
+        .profile-card {
+            background: var(--bg-card);
+            border-radius: 32px;
+            box-shadow: 0 30px 80px var(--shadow-light);
+            margin: -100px auto 60px auto;
+            max-width: 1100px;
+            padding: 80px 50px 50px 50px;
+            position: relative;
+            z-index: 3;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        body.dark .profile-card {
+            background: var(--bg-card) !important;
+            box-shadow: 0 30px 80px var(--shadow-light) !important;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .profile-top {
+            display: flex;
+            align-items: flex-start;
+            gap: 50px;
+            margin-bottom: 50px;
+        }
+
+        /* FIXED: Enhanced Profile Picture Container with Change Option */
+        .profile-pic-container {
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .profile-pic-large {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: var(--gradient-red);
+            box-shadow: 0 15px 40px rgba(227, 28, 28, 0.3);
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition);
+            cursor: pointer;
+            background-image: url('https://i.pravatar.cc/150?img=5');
+        }
+
+        /* FIXED: Profile Picture Hover Overlay */
+        .profile-pic-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: var(--transition);
+            border-radius: 50%;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            text-align: center;
+            gap: 4px;
+        }
+
+        .profile-pic-container:hover .profile-pic-overlay {
+            opacity: 1;
+        }
+
+        .profile-pic-large:hover {
+            transform: scale(1.05);
+            box-shadow: 0 20px 50px rgba(227, 28, 28, 0.4);
+        }
+
+        /* FIXED: Hidden File Input */
+        .profile-pic-input {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        /* Profile Status Indicator */
+        .profile-status {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            width: 24px;
+            height: 24px;
+            background: #00d4aa;
+            border: 3px solid white;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0, 212, 170, 0.5);
+            z-index: 5;
+        }
+
+        .profile-info {
+            flex: 1;
+        }
+
+        .profile-name-large {
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            letter-spacing: -2px;
+            background: var(--gradient-red);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .profile-subtitle {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            font-weight: 500;
+        }
+
+        .profile-stats {
+            display: flex;
+            gap: 40px;
+            margin-bottom: 30px;
+        }
+
+        .stat-item {
+            text-align: center;
+            position: relative;
+        }
+
+        .stat-number {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--primary-red);
+            display: block;
+            transition: var(--transition);
+        }
+
+        .stat-item:hover .stat-number {
+            transform: scale(1.1);
+        }
+
+        .stat-label {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        .edit-profile-btn {
+            background: var(--gradient-red);
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 8px 25px rgba(227, 28, 28, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .edit-profile-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: var(--transition);
+        }
+
+        .edit-profile-btn:hover::before {
+            left: 100%;
+        }
+
+        .edit-profile-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(227, 28, 28, 0.4);
+        }
+
+        /* Enhanced Profile Sections */
+        .profile-sections {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .profile-section {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            padding: 35px;
+            transition: var(--transition);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        body.dark .profile-section {
+            background: rgba(36, 36, 36, 0.8) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .profile-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--gradient-red);
+            transform: scaleX(0);
+            transition: var(--transition);
+        }
+
+        .profile-section:hover::before {
+            transform: scaleX(1);
+        }
+
+        .profile-section:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px var(--shadow-hover);
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--primary-red);
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-content {
+            color: var(--text-secondary);
+            line-height: 1.7;
+            font-weight: 400;
+        }
+
+        /* Enhanced Skills */
+        .skills-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .skill-tag {
+            background: var(--gradient-red);
+            color: white;
+            padding: 10px 18px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(227, 28, 28, 0.3);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .skill-tag:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(227, 28, 28, 0.4);
+        }
+
+        /* Enhanced Projects & Certifications */
+        .project-item,
+        .cert-item {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 18px;
+            box-shadow: 0 6px 20px var(--shadow-light);
+            transition: var(--transition);
+            border-left: 4px solid transparent;
+        }
+
+        body.dark .project-item,
+        body.dark .cert-item {
+            background: rgba(68, 68, 68, 0.8) !important;
+        }
+
+        .project-item:hover,
+        .cert-item:hover {
+            transform: translateX(8px);
+            border-left-color: var(--primary-red);
+            box-shadow: 0 8px 30px var(--shadow-hover);
+        }
+
+        .project-name,
+        .cert-details h4 {
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .project-desc,
+        .cert-details p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .cert-item {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .cert-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--gradient-red);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 800;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+            box-shadow: 0 4px 15px rgba(227, 28, 28, 0.3);
+        }
+
+        /* Contact Section */
+        .contact-full {
+            grid-column: 1 / -1;
+            background: var(--gradient-red) !important;
+            color: white !important;
+            text-align: center;
+        }
+
+        body.dark .contact-full {
+            background: linear-gradient(135deg, #555 0%, #777 100%) !important;
+        }
+
+        .contact-full .section-title {
+            color: white !important;
+            justify-content: center;
+        }
+
+        .contact-info {
+            display: flex;
+            justify-content: center;
+            gap: 50px;
+            flex-wrap: wrap;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .contact-item:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Premium Dark Mode Toggle */
+        .darkmode-fab {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            width: 56px;
+            height: 56px;
+            border: none;
+            border-radius: 50%;
+            background: var(--gradient-red);
+            color: white;
+            cursor: pointer;
+            z-index: 9999;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 25px rgba(227, 28, 28, 0.4);
+            transition: var(--transition);
+            backdrop-filter: blur(10px);
+        }
+
+        .darkmode-fab:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 12px 35px rgba(227, 28, 28, 0.5);
+        }
+
+        body.dark .darkmode-fab {
+            background: linear-gradient(135deg, #eee, #fff) !important;
+            color: #222 !important;
+            box-shadow: 0 8px 25px rgba(255, 255, 255, 0.3) !important;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 968px) {
+            .profile-sections {
+                grid-template-columns: 1fr;
+            }
+
+            .profile-top {
+                flex-direction: column;
+                text-align: center;
+                gap: 30px;
+            }
+
+            .profile-stats {
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 768px) {
+            nav.sidebar {
+                width: 100vw;
+                height: 70px;
+                flex-direction: row;
+                padding: 12px 20px;
+            }
+
+            .sidebar-menu {
+                flex-direction: row;
+                gap: 8px;
+                justify-content: space-around;
+                padding: 0;
+            }
+
+            .sidebar-icon {
+                padding: 12px;
+                min-width: 48px;
+                border-radius: 12px;
+            }
+
+            main.profile-main {
+                margin-left: 0;
+                margin-top: 70px;
+            }
+
+            .profile-header {
+                padding: 40px 0 100px 0;
+            }
+
+            .header-content,
+            .profile-card {
+                margin-left: 20px;
+                margin-right: 20px;
+                padding: 50px 30px 40px 30px;
+            }
+
+            .profile-name-large {
+                font-size: 2.2rem;
+            }
+
+            .contact-info {
+                flex-direction: column;
+                gap: 25px;
+            }
+
+            .profile-stats {
+                gap: 25px;
+            }
+        }
+
+        /* Loading Animation */
+        .profile-card {
+            animation: slideInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .profile-section {
+            animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            animation-fill-mode: both;
+        }
+
+        .profile-section:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .profile-section:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .profile-section:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        .profile-section:nth-child(4) {
+            animation-delay: 0.4s;
+        }
+
+        .profile-section:nth-child(5) {
+            animation-delay: 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Enhanced Sidebar -->
+        <nav class="sidebar" id="sidebar" aria-label="Sidebar navigation">
+            <div class="sidebar-menu">
+                <a href="#" class="sidebar-icon" id="hamburger" aria-label="Toggle Sidebar">
+                    <svg viewBox="0 0 24 24">
+                        <line x1="3" y1="6" x2="21" y2="6" />
+                        <line x1="3" y1="12" x2="21" y2="12" />
+                        <line x1="3" y1="18" x2="21" y2="18" />
+                    </svg>
+                    <span class="sidebar-label">Menu</span>
+                </a>
+                <a href="home.html" class="sidebar-icon" aria-label="Dashboard">
+                    <svg viewBox="0 0 24 24">
+                        <rect x="3" y="3" width="7" height="7" rx="1" />
+                        <rect x="14" y="3" width="7" height="7" rx="1" />
+                        <rect x="14" y="14" width="7" height="7" rx="1" />
+                        <rect x="3" y="14" width="7" height="7" rx="1" />
+                    </svg>
+                    <span class="sidebar-label">Dashboard</span>
+                </a>
+                <a href="cart.html" class="sidebar-icon" aria-label="Cart">
+                    <svg viewBox="0 0 24 24">
+                        <circle cx="9" cy="21" r="1" />
+                        <circle cx="20" cy="21" r="1" />
+                        <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6" />
+                    </svg>
+                    <span class="sidebar-label">Cart</span>
+                </a>
+                <a href="marketplace.html" class="sidebar-icon" aria-label="Marketplace">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M6 2l1 7h10l1-7" />
+                        <rect x="2" y="9" width="20" height="7" rx="2" />
+                    </svg>
+                    <span class="sidebar-label">Marketplace</span>
+                </a>
+                <a href="messages.html" class="sidebar-icon" aria-label="Messages" style="position: relative;">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h12a2 2 0 012 2z" />
+                    </svg>
+                    <span class="sidebar-label">Messages</span>
+                    <div class="notification-badge" aria-label="New notifications">3</div>
+                </a>
+                <a href="wallet.html" class="sidebar-icon" aria-label="Wallet">
+                    <svg viewBox="0 0 24 24">
+                        <rect x="2" y="7" width="20" height="7" rx="2" />
+                        <path d="M16 3h6v4" />
+                    </svg>
+                    <span class="sidebar-label">Wallet</span>
+                </a>
+                <a href="leaderboard.html" class="sidebar-icon" aria-label="Leaderboard">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M17 3H7v4H17z" />
+                        <path d="M5 8v3a6 6 0 0010 3" />
+                        <path d="M19 8v3a6 6 0 01-10 3" />
+                        <path d="M12 17v4" />
+                        <path d="M7 21h10" />
+                    </svg>
+                    <span class="sidebar-label">Leaderboard</span>
+                </a>
+                <a href="#" class="sidebar-icon" aria-label="My Profile">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                    </svg>
+                    <span class="sidebar-label">My Profile</span>
+                </a>
+            </div>
+        </nav>
+
+        <!-- Main Profile Content -->
+        <main class="profile-main">
+            <!-- Premium Header Section -->
+            <section class="profile-header">
+                <div class="header-content">
+                    <button class="back-btn" onclick="goBack()">
+                        ← Back to Dashboard
+                    </button>
+                </div>
+            </section>
+
+            <!-- Premium Profile Card -->
+            <section class="profile-card">
+                <div class="profile-top">
+                    <!-- FIXED: Enhanced Profile Picture Container -->
+                    <div class="profile-pic-container">
+                        <div class="profile-pic-large" id="profilePicLarge">
+                            <!-- FIXED: Profile Picture Change Overlay -->
+                            <div class="profile-pic-overlay">
+                                <span></span>
+                                <span>Change Picture</span>
+                            </div>
+                            <!-- FIXED: Hidden File Input -->
+                            <input type="file" class="profile-pic-input" id="profilePicInput" accept="image/*"
+                                aria-label="Change profile picture">
+                            <div class="profile-status" title="Online"></div>
+                        </div>
+                    </div>
+                    <div class="profile-info">
+                        <h1 class="profile-name-large" id="profileNameLarge">Aryan Dhiman</h1>
+                        <p class="profile-subtitle" id="profileSubtitle">BTech Student & Full-Stack Developer</p>
+
+                        <div class="profile-stats">
+                            <div class="stat-item">
+                                <span class="stat-number">11</span>
+                                <span class="stat-label">Projects</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">4</span>
+                                <span class="stat-label">Certifications</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">5</span>
+                                <span class="stat-label">Years Experience</span>
+                            </div>
+                        </div>
+
+                        <button class="edit-profile-btn" onclick="editProfile()">
+                            Edit Profile
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Enhanced Profile Sections -->
+                <div class="profile-sections">
+                    <!-- About Section -->
+                    <div class="profile-section">
+                        <h3 class="section-title">
+                            About Me
+                        </h3>
+                        <div class="section-content" id="aboutContent">
+                            <p>Passionate BTech student specializing in full-stack development with expertise in modern
+                                web technologies. I love creating innovative solutions and helping fellow students with
+                                their academic and project needs. Always eager to learn new technologies and collaborate
+                                on exciting projects!</p>
+                        </div>
+                    </div>
+
+                    <!-- Skills Section -->
+                    <div class="profile-section">
+                        <h3 class="section-title">
+                            Skills & Technologies
+                        </h3>
+                        <div class="skills-grid" id="skillsGrid">
+                            <span class="skill-tag">Programming</span>
+                            <span class="skill-tag">UI/UX Design</span>
+                            <span class="skill-tag">Data Analysis</span>
+                            <span class="skill-tag">JavaScript</span>
+                            <span class="skill-tag">React.js</span>
+                            <span class="skill-tag">Node.js</span>
+                            <span class="skill-tag">Python</span>
+                            <span class="skill-tag">MongoDB</span>
+                        </div>
+                    </div>
+
+                    <!-- Projects Section -->
+                    <div class="profile-section">
+                        <h3 class="section-title">
+                            Featured Projects
+                        </h3>
+                        <div class="section-content">
+                            <div class="project-item">
+                                <div class="project-name">UniKart Platform</div>
+                                <div class="project-desc">A comprehensive marketplace platform for students to buy,
+                                    sell, and exchange products and services within the university ecosystem. Built with
+                                    React, Node.js, and MongoDB.</div>
+                            </div>
+                            <div class="project-item">
+                                <div class="project-name">Student Portal Dashboard</div>
+                                <div class="project-desc">Full-stack web application for student management with
+                                    features like course enrollment, grade tracking, and communication tools. Modern UI
+                                    with real-time notifications.</div>
+                            </div>
+                            <div class="project-item">
+                                <div class="project-name">AI Study Assistant</div>
+                                <div class="project-desc">Machine learning powered study companion that helps students
+                                    organize their learning materials and provides personalized study recommendations.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Certifications Section -->
+                    <div class="profile-section">
+                        <h3 class="section-title">
+                            Certifications & Achievements
+                        </h3>
+                        <div class="section-content">
+                            <div class="cert-item">
+                                <div class="cert-icon">JS</div>
+                                <div class="cert-details">
+                                    <h4>JavaScript Certified Developer</h4>
+                                    <p>Advanced JavaScript and ES6+ certification with focus on modern development
+                                        practices and frameworks</p>
+                                </div>
+                            </div>
+                            <div class="cert-item">
+                                <div class="cert-icon"></div>
+                                <div class="cert-details">
+                                    <h4>React.js Professional</h4>
+                                    <p>Comprehensive React development certification covering hooks, context, redux, and
+                                        advanced patterns</p>
+                                </div>
+                            </div>
+                            <div class="cert-item">
+                                <div class="cert-icon"></div>
+                                <div class="cert-details">
+                                    <h4>UI/UX Design Excellence</h4>
+                                    <p>User experience and interface design certification with emphasis on accessibility
+                                        and modern design principles</p>
+                                </div>
+                            </div>
+                            <div class="cert-item">
+                                <div class="cert-icon"></div>
+                                <div class="cert-details">
+                                    <h4>Data Analysis Professional</h4>
+                                    <p>Comprehensive data analysis and visualization certification using Python, pandas,
+                                        and advanced statistical methods</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contact Section -->
+                    <div class="profile-section contact-full">
+                        <h3 class="section-title">
+                            Let's Connect
+                        </h3>
+                        <div class="contact-info">
+                            <div class="contact-item">
+                                <span></span>
+                                <span id="contactEmail">aryan@example.com</span>
+                            </div>
+                            <div class="contact-item">
+                                <span></span>
+                                <span id="contactPhone">+91 98765 43210</span>
+                            </div>
+                            <div class="contact-item">
+                                <span></span>
+                                <span id="contactLocation">Mumbai, India</span>
+                            </div>
+                            <div class="contact-item">
+                                <span></span>
+                                <span>linkedin.com/in/aryandhiman003</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Premium Dark Mode Toggle -->
+    <button class="darkmode-fab" id="darkmode-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">🌙</button>
+
+    <script>
+        // Enhanced Profile Picture Change functionality
+        function initializeProfilePicture() {
+            const profilePicInput = document.getElementById('profilePicInput');
+            const profilePicLarge = document.getElementById('profilePicLarge');
+
+            profilePicInput.addEventListener('change', function (event) {
+                const file = event.target.files[0];
+                if (file) {
+                    // Validate file type
+                    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                    if (!validTypes.includes(file.type)) {
+                        alert('Please select a valid image file (JPEG, PNG, or GIF)');
+                        return;
+                    }
+
+                    // Validate file size (max 5MB)
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert('File size should be less than 5MB');
+                        return;
+                    }
+
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        // Update profile picture with smooth transition
+                        profilePicLarge.style.transition = 'opacity 0.3s ease';
+                        profilePicLarge.style.opacity = '0.7';
+
+                        setTimeout(() => {
+                            profilePicLarge.style.backgroundImage = `url(${e.target.result})`;
+                            profilePicLarge.style.opacity = '1';
+
+                            // Save to localStorage for persistence
+                            localStorage.setItem('userProfilePic', e.target.result);
+
+                            // Show success message
+                            showNotification('✅ Profile picture updated successfully!', 'success');
+                        }, 300);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        // Enhanced notification system
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#00d4aa' : type === 'error' ? '#ff4757' : '#e31c1c'};
+                color: white;
+                padding: 16px 24px;
+                border-radius: 12px;
+                font-weight: 600;
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+                z-index: 10000;
+                transform: translateX(400px);
+                transition: transform 0.3s ease;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+
+            setTimeout(() => {
+                notification.style.transform = 'translateX(400px)';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
+        // Enhanced Profile functionality with smooth animations
+        function goBack() {
+            if (document.referrer && document.referrer.includes(window.location.origin)) {
+                window.history.back();
+            } else {
+                window.location.href = 'home.html';
+            }
+        }
+
+        function editProfile() {
+            // Enhanced edit profile with better UX
+            const result = confirm('Edit your profile?\n\nThis will take you to the settings page where you can update your information, skills, and projects.');
+            if (result) {
+                window.location.href = 'settings.html';
+            }
+        }
+
+        // Enhanced profile data loading
+        function loadProfileData() {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            const userProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+            const savedProfilePic = localStorage.getItem('userProfilePic');
+
+            // Update profile information with smooth transitions
+            const profileName = document.getElementById('profileNameLarge');
+            const contactEmail = document.getElementById('contactEmail');
+            const profilePic = document.getElementById('profilePicLarge');
+
+            if (currentUser.name) {
+                profileName.style.opacity = '0';
+                setTimeout(() => {
+                    profileName.textContent = currentUser.name;
+                    profileName.style.opacity = '1';
+                }, 150);
+            }
+
+            if (currentUser.email) {
+                contactEmail.textContent = currentUser.email;
+            }
+
+            // Load saved profile picture
+            if (savedProfilePic) {
+                profilePic.style.backgroundImage = `url(${savedProfilePic})`;
+            } else if (userProfile.profilePic) {
+                profilePic.style.backgroundImage = `url(${userProfile.profilePic})`;
+            }
+
+            // Update dynamic content
+            if (userProfile.course) {
+                const subtitle = document.getElementById('profileSubtitle');
+                subtitle.textContent = `${userProfile.course} Student & Full-Stack Developer`;
+            }
+
+            // Enhanced skills loading
+            if (userProfile.skills && userProfile.skills.length > 0) {
+                const skillsGrid = document.getElementById('skillsGrid');
+                skillsGrid.innerHTML = '';
+
+                userProfile.skills.forEach((skill, index) => {
+                    setTimeout(() => {
+                        const skillTag = document.createElement('span');
+                        skillTag.className = 'skill-tag';
+                        skillTag.textContent = skill;
+                        skillTag.style.opacity = '0';
+                        skillTag.style.transform = 'translateY(10px)';
+                        skillsGrid.appendChild(skillTag);
+
+                        setTimeout(() => {
+                            skillTag.style.opacity = '1';
+                            skillTag.style.transform = 'translateY(0)';
+                        }, 50);
+                    }, index * 100);
+                });
+            }
+
+            if (userProfile.bio) {
+                document.getElementById('aboutContent').innerHTML = `<p>${userProfile.bio}</p>`;
+            }
+        }
+
+        // Enhanced dark mode with system preference detection
+        function initializeDarkMode() {
+            const savedMode = localStorage.getItem('darkMode');
+            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const toggleBtn = document.getElementById('darkmode-toggle');
+
+            const shouldUseDark = savedMode === 'true' || (savedMode === null && systemPrefersDark);
+
+            if (shouldUseDark) {
+                document.body.classList.add('dark');
+                document.documentElement.setAttribute('data-theme', 'dark');
+                toggleBtn.textContent = '☀️';
+            } else {
+                document.body.classList.remove('dark');
+                document.documentElement.setAttribute('data-theme', 'light');
+                toggleBtn.textContent = '🌙';
+            }
+        }
+
+        function toggleDarkMode() {
+            const body = document.body;
+            const html = document.documentElement;
+            const toggleBtn = document.getElementById('darkmode-toggle');
+
+            body.classList.toggle('dark');
+            const isDark = body.classList.contains('dark');
+
+            html.setAttribute('data-theme', isDark ? 'dark' : 'light');
+            localStorage.setItem('darkMode', isDark);
+
+            // Enhanced toggle animation
+            toggleBtn.style.transform = 'scale(0.8)';
+            setTimeout(() => {
+                toggleBtn.textContent = isDark ? '☀️' : '🌙';
+                toggleBtn.style.transform = 'scale(1)';
+            }, 150);
+        }
+
+        // Enhanced sidebar functionality
+        function initializeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const hamburger = document.getElementById('hamburger');
+            let isExpanded = false;
+
+            hamburger.addEventListener('click', function (e) {
+                e.preventDefault();
+                isExpanded = !isExpanded;
+                sidebar.classList.toggle('expanded', isExpanded);
+            });
+
+            // Auto-collapse on mobile
+            if (window.innerWidth <= 768) {
+                document.addEventListener('click', function (e) {
+                    if (!sidebar.contains(e.target) && isExpanded) {
+                        sidebar.classList.remove('expanded');
+                        isExpanded = false;
+                    }
+                });
+            }
+        }
+
+        // Enhanced page initialization
+        window.addEventListener('DOMContentLoaded', function () {
+            // Show loading state briefly for smooth UX
+            document.body.style.opacity = '0';
+
+            setTimeout(() => {
+                initializeProfilePicture(); // FIXED: Initialize profile picture functionality
+                loadProfileData();
+                initializeDarkMode();
+                initializeSidebar();
+
+                // Enhanced event listeners
+                document.getElementById('darkmode-toggle').addEventListener('click', toggleDarkMode);
+
+                // Smooth fade in
+                document.body.style.transition = 'opacity 0.5s ease';
+                document.body.style.opacity = '1';
+
+                console.log('Premium profile page with picture change loaded successfully!');
+            }, 100);
+        });
+
+        // Listen for system dark mode changes
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function (e) {
+            if (localStorage.getItem('darkMode') === null) {
+                initializeDarkMode();
+            }
+        });
+
+        // Enhanced scroll behavior
+        window.addEventListener('scroll', function () {
+            const scrolled = window.pageYOffset;
+            const parallax = document.querySelector('.profile-header');
+            const speed = scrolled * 0.5;
+
+            if (parallax) {
+                parallax.style.transform = `translateY(${speed}px)`;
+            }
+        });
+
+        // Add smooth scrolling for internal links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

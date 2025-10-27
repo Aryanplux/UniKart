@@ -1,0 +1,821 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniKart - Home</title>
+    <style>
+        html, body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f7faf7;
+            color: #222;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        body.dark {
+            background: #191c1c !important;
+            color: #f5f5f5 !important;
+        }
+
+        .home-fullscreen {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background: inherit;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        /* Dark Mode Toggle */
+        .darkmode-fab {
+            position: fixed;
+            top: 18px;
+            right: 22px;
+            width: 54px;
+            height: 54px;
+            background: #e31c1c;
+            color: #fff;
+            border: none;
+            box-shadow: 0 4px 14px #e31c1c50;
+            font-size: 26px;
+            border-radius: 50%;
+            z-index: 99999;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .darkmode-fab:hover {
+            background: #b21c1c;
+            transform: scale(1.1);
+        }
+
+        body.dark .darkmode-fab {
+            background: #555 !important;
+            color: #fff !important;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: #e31c1c;
+            width: 90px;
+            min-width: 90px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 24px 0;
+            border-radius: 0;
+            box-shadow: 2px 0 10px rgba(227, 28, 28, 0.1);
+        }
+
+        .sidebar-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+        }
+
+        .sidebar-icon {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 23px;
+            cursor: pointer;
+            padding: 12px;
+            border-radius: 50%;
+            transition: background 0.2s;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar-icon:hover { 
+            background: rgba(255,255,255,0.15); 
+        }
+
+        /* Main Section */
+        .main-section {
+            flex: 1;
+            height: 100vh;
+            overflow-y: auto;
+            padding: 40px 35px 0 35px;
+            background: #f7faf7;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        body.dark .main-section {
+            background: #191c1c !important;
+            color: #f5f5f5 !important;
+        }
+
+        .top-bar {
+            display: flex;
+            align-items: center;
+            gap: 22px;
+            margin-bottom: 30px;
+        }
+
+        .notification-btn {
+            background: #e31c1c;
+            border: none;
+            color: #fff;
+            padding: 14px;
+            border-radius: 16px;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 6px 20px #e31c1c30;
+            transition: all 0.2s;
+        }
+
+        .notification-btn:hover {
+            background: #c61616;
+        }
+
+        body.dark .notification-btn {
+            background: #a51010 !important;
+        }
+
+        .search-area {
+            flex: 1;
+            position: relative;
+            max-width: 600px;
+        }
+
+        .searchbar {
+            width: 100%;
+            padding: 15px 51px 15px 24px;
+            border: none;
+            border-radius: 30px;
+            background: #fff;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .searchbar:focus {
+            outline: none;
+            box-shadow: 0 0 10px rgba(227, 28, 28, 0.3);
+        }
+
+        body.dark .searchbar {
+            background: #232323 !important;
+            color: #f5f5f5 !important;
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 25px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 20px;
+            color: #e31c1c;
+            cursor: pointer;
+        }
+
+        .trending-title {
+            font-size: 2.7rem;
+            font-weight: 900;
+            margin-bottom: 16px;
+            color: #222;
+            letter-spacing: -1px;
+        }
+
+        body.dark .trending-title { 
+            color: #f5f5f5 !important; 
+        }
+
+        .trending-title::after {
+            content: '';
+            display: block;
+            width: 60px;
+            height: 5px;
+            background: #e31c1c;
+            border-radius: 2px;
+            margin: 6px 0 0 0;
+        }
+
+        .feed-container {
+            max-width: 960px;
+        }
+
+        .main-feed-card {
+            width: 100%;
+            height: 220px;
+            background: linear-gradient(120deg,#8777da,#628abb 70%);
+            border-radius: 28px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 40px #8a79ed44;
+            border: none;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        body.dark .main-feed-card {
+            background: linear-gradient(120deg, #4a4a4a, #6a6a6a) !important;
+            box-shadow: 0 8px 32px #2a2f49;
+        }
+
+        .carousel-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 17px;
+            margin-bottom: 30px;
+        }
+
+        .dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #ccc;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .dot.active {
+            background: #e31c1c;
+            box-shadow: 0 2px 10px #e31c1c77;
+        }
+
+        .product-row {
+            display: flex;
+            gap: 22px;
+            align-items: center;
+            margin-bottom: 50px;
+        }
+
+        .mini-product-card {
+            width: 90px;
+            height: 90px;
+            background: linear-gradient(120deg,#ffa8a8,#feb9b9 80%);
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(255, 154, 158, 0.38);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .mini-product-card:hover {
+            transform: translateY(-3px);
+        }
+
+        body.dark .mini-product-card {
+            background: linear-gradient(120deg, #666, #888) !important;
+        }
+
+        .add-product-btn {
+            width: 90px;
+            height: 90px;
+            border: 3px solid #e31c1c;
+            border-radius: 20px;
+            background: #fff;
+            color: #e31c1c;
+            font-size: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .add-product-btn:hover {
+            background: #fff5f5;
+            transform: translateY(-3px);
+        }
+
+        body.dark .add-product-btn {
+            background: #232323 !important;
+            color: #f5f5f5 !important;
+        }
+
+        .posted-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #e31c1c;
+            color: #fff;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 50%;
+            width: 26px;
+            height: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 10px #e31c1c55;
+        }
+
+        /* Right Panel */
+        .right-panel {
+            width: 340px;
+            min-width: 300px;
+            background: #f9f9fb;
+            padding: 20px 15px;
+            border-radius: 0;
+            box-shadow: -2px 0 18px #dce0ee33;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            height: 100vh;
+            overflow: hidden;
+            justify-content: flex-start;
+        }
+
+        body.dark .right-panel {
+            background: #1f1f1f !important;
+        }
+
+        .profile-card {
+            background: #fff;
+            border-radius: 0;
+            padding: 20px 15px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(133, 114, 204, 0.10);
+            margin-bottom: 0;
+            transition: all 0.3s;
+            flex-shrink: 0;
+        }
+
+        body.dark .profile-card {
+            background: #242424 !important;
+        }
+
+        .profile-pic {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(120deg,#928cde,#8ab7dd);
+            border-radius: 15px;
+            margin: 0 auto 12px;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .profile-name {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #222;
+            transition: color 0.3s;
+        }
+
+        body.dark .profile-name {
+            color: #f5f5f5 !important;
+        }
+
+        .profile-details {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        body.dark .profile-details {
+            color: #ccc !important;
+        }
+
+        .profile-lines {
+            width: 70px;
+            height: 4px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            margin: 8px auto 10px auto;
+        }
+
+        body.dark .profile-lines {
+            background: #555 !important;
+        }
+
+        .view-btn {
+            background: #e31c1c;
+            color: #fff;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 14px;
+            margin-bottom: 10px;
+            margin-top: 4px;
+            letter-spacing: 0.5px;
+            transition: all 0.2s;
+        }
+
+        .view-btn:hover { 
+            background: #c61616; 
+            transform: translateY(-1px);
+        }
+
+        .stars {
+            margin: 8px 0 10px 0;
+            font-size: 1rem;
+        }
+
+        .star {
+            color: #ffd700;
+            margin: 0 1px;
+        }
+
+        .profile-action {
+            width: 100%;
+            background: #f3f4f6;
+            border: none;
+            padding: 12px 0;
+            border-radius: 10px;
+            margin: 5px 0;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 14px;
+            color: #222;
+            box-shadow: 0 1px 8px #d4d4df18;
+            transition: all 0.2s;
+        }
+
+        .profile-action:hover {
+            background: #ffe5e5;
+            transform: translateY(-1px);
+        }
+
+        body.dark .profile-action {
+            background: #333 !important;
+            color: #f5f5f5 !important;
+        }
+
+        body.dark .profile-action:hover {
+            background: #444 !important;
+        }
+
+        /* Leaderboard */
+        .leaderboard-card {
+            background: #fff;
+            border-radius: 0;
+            padding: 15px;
+            box-shadow: 0 4px 15px #c59ce87a;
+            margin-top: 0;
+            transition: all 0.3s;
+            flex: 1;
+            min-height: 0;
+        }
+
+        body.dark .leaderboard-card {
+            background: #242424 !important;
+        }
+
+        .leaderboard-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            color: #222;
+            text-align: left;
+        }
+
+        body.dark .leaderboard-title {
+            color: #f5f5f5 !important;
+        }
+
+        .leaderboard-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+            padding: 6px 0;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .leaderboard-row:hover {
+            background: #f8f9fa;
+            transform: translateX(3px);
+        }
+
+        body.dark .leaderboard-row:hover {
+            background: #333 !important;
+        }
+
+        .lb-icon {
+            width: 16px;
+            height: 16px;
+            background: #e31c1c;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
+        .lb-name {
+            flex: 1;
+            font-weight: 600;
+            color: #222;
+            font-size: 14px;
+        }
+
+        body.dark .lb-name {
+            color: #f5f5f5 !important;
+        }
+
+        .lb-score {
+            font-weight: 700;
+            color: #666;
+            font-size: 13px;
+            flex-shrink: 0;
+        }
+
+        body.dark .lb-score {
+            color: #ccc !important;
+        }
+
+        /* Responsive */
+        @media (max-width: 950px) {
+            .right-panel { 
+                display: none; 
+            }
+        }
+
+        @media (max-width: 720px) {
+            .home-fullscreen {
+                flex-direction: column;
+                height: 100vh;
+                overflow: auto;
+            }
+            
+            .sidebar {
+                flex-direction: row;
+                width: 100vw;
+                height: 60px;
+                border-radius: 0 0 24px 24px;
+            }
+            
+            .sidebar-menu {
+                flex-direction: row;
+                gap: 13px;
+            }
+            
+            .main-section {
+                padding: 18px 6vw;
+            }
+            
+            .darkmode-fab {
+                top: 10px;
+                right: 15px;
+                width: 45px;
+                height: 45px;
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="home-fullscreen">
+        <!-- Dark Mode Toggle -->
+        <button class="darkmode-fab" id="darkModeToggle" aria-label="Toggle Dark Mode">
+            🌙
+        </button>
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-menu">
+                <button class="sidebar-icon" title="Menu">☰</button>
+                <button class="sidebar-icon" title="Add to Cart">🛒</button>
+                <button class="sidebar-icon" title="Shopping Bag">🛍️</button>
+                <button class="sidebar-icon" title="Messages">✉️</button>
+                <button class="sidebar-icon" id="walletBtn" title="Wallet">💰</button>
+                <button class="sidebar-icon" title="Leaderboard">🏆</button>
+                <button class="sidebar-icon" title="Settings">⚙️</button>
+            </div>
+        </aside>
+
+        <!-- Main Section -->
+        <main class="main-section">
+            <div class="top-bar">
+                <button class="notification-btn" title="Notifications">🔔</button>
+                <div class="search-area">
+                    <input
+                        type="text"
+                        class="searchbar"
+                        placeholder="Search products and users"
+                        id="searchInput"
+                    />
+                    <div class="search-icon">🔍</div>
+                </div>
+            </div>
+            
+            <h2 class="trending-title">TRENDING</h2>
+            <section class="feed-container">
+                <div class="main-feed-card" onclick="openFeedItem()"></div>
+                <div class="carousel-indicator">
+                    <span class="dot active" onclick="switchFeed(0)"></span>
+                    <span class="dot" onclick="switchFeed(1)"></span>
+                    <span class="dot" onclick="switchFeed(2)"></span>
+                    <span class="dot" onclick="switchFeed(3)"></span>
+                    <span class="dot" onclick="switchFeed(4)"></span>
+                </div>
+                <div class="product-row">
+                    <div class="mini-product-card" onclick="openProduct(1)"></div>
+                    <div class="mini-product-card" onclick="openProduct(2)"></div>
+                    <div class="mini-product-card" onclick="openProduct(3)"></div>
+                    <div class="add-product-btn" onclick="addProduct()">
+                        ➕
+                        <span class="posted-count" id="postCount">4</span>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Right Panel -->
+        <aside class="right-panel">
+            <div class="profile-card">
+                <div class="profile-pic" id="userProfilePic"></div>
+                <div class="profile-name" id="userName">User</div>
+                <div class="profile-details" id="userDetails">
+                    <div><strong>Course:</strong> <span id="userCourse">-</span></div>
+                    <div><strong>Skills:</strong> <span id="userSkills">-</span></div>
+                    <div><strong>Interests:</strong> <span id="userInterests">-</span></div>
+                </div>
+                <div class="profile-lines"></div>
+                <button class="view-btn" onclick="viewFullProfile()">View</button>
+                <div class="stars">
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                </div>
+                <button class="profile-action" onclick="openProjects()">Projects</button>
+                <button class="profile-action" onclick="openCertifications()">Certifications</button>
+            </div>
+            <div class="leaderboard-card">
+                <div class="leaderboard-title">Leaderboard</div>
+                <div class="leaderboard-row">
+                    <span class="lb-icon"></span> 
+                    <span class="lb-name">Salman Khan</span> 
+                    <span class="lb-score">120</span>
+                </div>
+                <div class="leaderboard-row">
+                    <span class="lb-icon"></span> 
+                    <span class="lb-name">Shah Rukh Khan</span> 
+                    <span class="lb-score">100</span>
+                </div>
+                <div class="leaderboard-row">
+                    <span class="lb-icon"></span> 
+                    <span class="lb-name">Tees Marr Khan</span> 
+                    <span class="lb-score">90</span>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        // Home page functionality
+        let isDarkMode = false;
+        let postCount = 4;
+
+        // Initialize page
+        window.addEventListener('DOMContentLoaded', function() {
+            loadUserProfile();
+            loadTheme();
+            bindEvents();
+        });
+
+        // Load user profile data
+        function loadUserProfile() {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            const userProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+            
+            // Update profile display
+            document.getElementById('userName').textContent = currentUser.name || 'User';
+            
+            // Update profile picture
+            const profilePicEl = document.getElementById('userProfilePic');
+            if (userProfile.profilePic) {
+                profilePicEl.style.backgroundImage = `url(${userProfile.profilePic})`;
+            }
+            
+            // Update profile details
+            document.getElementById('userCourse').textContent = userProfile.course || 'Not specified';
+            document.getElementById('userSkills').textContent = 
+                userProfile.skills && userProfile.skills.length > 0 
+                    ? userProfile.skills.slice(0, 3).join(', ') + (userProfile.skills.length > 3 ? '...' : '')
+                    : 'Not specified';
+            document.getElementById('userInterests').textContent = 
+                userProfile.interests && userProfile.interests.length > 0 
+                    ? userProfile.interests.slice(0, 3).join(', ') + (userProfile.interests.length > 3 ? '...' : '')
+                    : 'Not specified';
+        }
+
+        // Theme management
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('darkMode');
+            if (savedTheme !== null) {
+                isDarkMode = JSON.parse(savedTheme);
+            }
+            applyTheme();
+        }
+
+        function toggleDarkMode() {
+            isDarkMode = !isDarkMode;
+            applyTheme();
+            localStorage.setItem('darkMode', JSON.stringify(isDarkMode));
+        }
+
+        function applyTheme() {
+            const body = document.body;
+            const toggleBtn = document.getElementById('darkModeToggle');
+            
+            if (isDarkMode) {
+                body.classList.add('dark');
+                toggleBtn.textContent = '☀️';
+            } else {
+                body.classList.remove('dark');
+                toggleBtn.textContent = '🌙';
+            }
+        }
+
+        // Event binding
+        function bindEvents() {
+            document.getElementById('darkModeToggle').addEventListener('click', toggleDarkMode);
+            document.getElementById('walletBtn').addEventListener('click', handleWalletClick);
+            document.getElementById('searchInput').addEventListener('keypress', handleSearch);
+        }
+
+        // Navigation functions
+        function handleWalletClick() {
+            console.log('🎯 Wallet icon clicked! Navigating to wallet...');
+            window.location.href = 'wallet.html';
+        }
+
+        function handleSearch(e) {
+            if (e.key === 'Enter') {
+                const query = e.target.value;
+                console.log('Searching for:', query);
+                // Implement search functionality
+            }
+        }
+
+        // Feed functions
+        function switchFeed(index) {
+            // Remove active from all dots
+            document.querySelectorAll('.dot').forEach(dot => dot.classList.remove('active'));
+            // Add active to clicked dot
+            document.querySelectorAll('.dot')[index].classList.add('active');
+            
+            // Here you could switch the main feed card content
+            console.log('Switching to feed item:', index);
+        }
+
+        function openFeedItem() {
+            console.log('Opening featured item');
+            // Navigate to featured product/post
+        }
+
+        function openProduct(productId) {
+            console.log('Opening product:', productId);
+            // Navigate to product details
+        }
+
+        function addProduct() {
+            console.log('Adding new product');
+            postCount++;
+            document.getElementById('postCount').textContent = postCount;
+            // Navigate to add product page or open modal
+        }
+
+        // Profile functions
+        function viewFullProfile() {
+            console.log('Viewing full profile');
+            // Navigate to profile page or show modal with full details
+            const userProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            
+            alert(`Profile Details:\n\nName: ${currentUser.name || 'User'}\nCourse: ${userProfile.course || 'Not specified'}\nSkills: ${userProfile.skills ? userProfile.skills.join(', ') : 'Not specified'}\nInterests: ${userProfile.interests ? userProfile.interests.join(', ') : 'Not specified'}\nBio: ${userProfile.bio || 'No bio provided'}`);
+        }
+
+        function openProjects() {
+            console.log('Opening projects');
+            // Navigate to projects page
+        }
+
+        function openCertifications() {
+            console.log('Opening certifications');
+            // Navigate to certifications page
+        }
+
+        // Logout function
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'login.html';
+        }
+
+        // Add logout option (you can call this from console or add a button)
+        window.logout = logout;
+    </script>
+</body>
+</html>
